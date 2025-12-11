@@ -6,5 +6,28 @@
     "@folio/it-speaks": "workspace:*",
     "react": "19.2.1",
     "react-dom": "19.2.1"
+  },
+  "nx": {
+    "name": "frontend",
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "^build"
+        ],
+        "syncGenerators": [
+          "@folio/tailwind-sync-plugin:update-tailwind-globs",
+          "@nx/js:typescript-sync"
+        ]
+      },
+      "dev": {
+        "dependsOn": [
+          "watch-deps"
+        ],
+        "syncGenerators": [
+          "@folio/tailwind-sync-plugin:update-tailwind-globs",
+          "@nx/js:typescript-sync"
+        ]
+      }
+    }
   }
 }

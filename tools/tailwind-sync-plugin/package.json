@@ -1,0 +1,58 @@
+{
+  "name": "@folio/tailwind-sync-plugin",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@folio/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "nx": {
+    "name": "tailwind-sync-plugin",
+    "targets": {
+      "build": {
+        "executor": "@nx/js:tsc",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "options": {
+          "outputPath": "tools/tailwind-sync-plugin/dist",
+          "main": "tools/tailwind-sync-plugin/src/index.ts",
+          "tsConfig": "tools/tailwind-sync-plugin/tsconfig.lib.json",
+          "rootDir": "tools/tailwind-sync-plugin/src",
+          "generatePackageJson": false,
+          "assets": [
+            {
+              "input": "./tools/tailwind-sync-plugin/src",
+              "glob": "**/!(*.ts)",
+              "output": "."
+            },
+            {
+              "input": "./tools/tailwind-sync-plugin/src",
+              "glob": "**/*.d.ts",
+              "output": "."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@nx/devkit": "22.0.0",
+    "nx": "22.0.0",
+    "tslib": "2.8.1"
+  },
+  "generators": "./generators.json",
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo",
+    "generators.json"
+  ]
+}

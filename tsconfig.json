@@ -8,6 +8,9 @@
     },
     {
       "path": "./libs/it-speaks"
+    },
+    {
+      "path": "./tools/tailwind-sync-plugin"
     }
   ]
 }

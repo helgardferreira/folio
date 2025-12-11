@@ -1,10 +1,7 @@
-import nx from '@nx/eslint-plugin';
-
 import baseConfig from '../../eslint.config.mjs';
 
 export default [
   ...baseConfig,
-  ...nx.configs['flat/react'],
   {
     files: ['**/*.json'],
     rules: {
@@ -29,19 +26,6 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     // Override or add rules here
-    rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          args: 'all',
-          argsIgnorePattern: '^_',
-          caughtErrors: 'all',
-          caughtErrorsIgnorePattern: '^_',
-          destructuredArrayIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
-          ignoreRestSiblings: true,
-        },
-      ],
-    },
+    rules: {},
   },
 ];

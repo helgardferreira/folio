@@ -5,6 +5,7 @@
   "scripts": {},
   "private": true,
   "dependencies": {
+    "@nx/devkit": "22.0.0",
     "react": "19.2.1",
     "react-dom": "19.2.1"
   },
@@ -14,7 +15,9 @@
     "@eslint/js": "9.33.0",
     "@nx/eslint": "22.0.0",
     "@nx/eslint-plugin": "22.0.0",
+    "@nx/jest": "22.0.0",
     "@nx/js": "22.0.0",
+    "@nx/plugin": "22.0.0",
     "@nx/react": "22.0.0",
     "@nx/vite": "22.0.0",
     "@nx/web": "22.0.0",
