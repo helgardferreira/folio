@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/it-speaks"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {

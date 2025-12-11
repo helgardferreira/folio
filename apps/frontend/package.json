@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "@folio/it-speaks": "workspace:*",
     "react": "19.2.1",
     "react-dom": "19.2.1"
   }
