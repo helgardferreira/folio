@@ -1,12 +1,18 @@
 import nx from '@nx/eslint-plugin';
+import importPlugin from 'eslint-plugin-import';
+import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
+import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 
 export default [
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
+  prettierPluginRecommended,
   {
     ignores: [
       '**/dist',
+      '**/out-tsc',
+      '**/test-output',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
     ],
@@ -17,19 +23,23 @@ export default [
       '@nx/enforce-module-boundaries': [
         'error',
         {
-          enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
             {
-              sourceTag: '*',
               onlyDependOnLibsWithTags: ['*'],
+              sourceTag: '*',
             },
           ],
+          enforceBuildableLibDependency: true,
         },
       ],
     },
   },
   {
+    plugins: {
+      import: importPlugin,
+      'unused-imports': unusedImportsPlugin,
+    },
     files: [
       '**/*.ts',
       '**/*.tsx',
@@ -41,6 +51,53 @@ export default [
       '**/*.mjs',
     ],
     // Override or add rules here
-    rules: {},
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      'import/order': [
+        'error',
+        {
+          alphabetize: {
+            caseInsensitive: false,
+            order: 'asc',
+          },
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+          ],
+          pathGroups: [
+            {
+              group: 'internal',
+              pattern: '@folio/**',
+            },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin'],
+          'newlines-between': 'always',
+        },
+      ],
+      'prefer-const': 'off',
+      'sort-imports': [
+        'error',
+        {
+          ignoreCase: false,
+          ignoreDeclarationSort: true,
+          ignoreMemberSort: false,
+          memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+        },
+      ],
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
+        'error',
+        {
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+          vars: 'all',
+          varsIgnorePattern: '^_',
+        },
+      ],
+    },
   },
 ];
