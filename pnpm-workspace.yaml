@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - libs/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@swc/core'
+  - '@tailwindcss/oxide'
+  - esbuild
+  - nx
+  - unrs-resolver
