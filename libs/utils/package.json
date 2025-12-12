@@ -1,6 +1,7 @@
 {
-  "name": "@folio/it-speaks",
+  "name": "@folio/utils",
   "version": "0.0.1",
+  "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -8,21 +9,17 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "@folio/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
   "dependencies": {
-    "@folio/utils": "workspace:*",
-    "@xstate/react": "6.0.0",
-    "react": "19.2.1",
-    "rxjs": "7.8.2",
-    "xstate": "5.25.0"
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.3.1",
+    "tslib": "2.8.1"
   },
   "nx": {
-    "name": "it-speaks",
-    "targets": {}
+    "name": "utils"
   }
 }

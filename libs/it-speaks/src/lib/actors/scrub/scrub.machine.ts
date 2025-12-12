@@ -6,7 +6,10 @@ import {
   setup,
 } from 'xstate';
 
+import { lerp, normalize } from '@folio/utils';
+
 import { scrubbingLogic } from './actors/scrubbing.actor';
+import { getScrubTrackRect } from './get-scrub-track-rect';
 import type {
   AttachEvent,
   ScrubActorContext,
@@ -14,7 +17,6 @@ import type {
   ScrubActorInput,
   ScrubEvent,
 } from './types';
-import { getScrubTrackRect, lerp, normalize } from './utils';
 
 // TODO: implement event emitters
 // TODO: continue here...

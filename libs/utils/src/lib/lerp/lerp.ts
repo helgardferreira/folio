@@ -5,7 +5,6 @@
  * @param min Minimum value of the range
  * @param max Maximum value of the range
  */
-// TODO: move this to shared `utils` library
 export function lerp(t: number, min: number, max: number): number {
   return min + t * (max - min);
 }

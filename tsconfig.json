@@ -10,6 +10,9 @@
       "path": "./libs/it-speaks"
     },
     {
+      "path": "./libs/utils"
+    },
+    {
       "path": "./tools/tailwind-sync-plugin"
     }
   ]

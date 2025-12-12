@@ -1,9 +1,10 @@
 import { useActorRef, useSelector } from '@xstate/react';
 import { useCallback } from 'react';
 
+import { cn } from '@folio/utils';
+
 import { scrubMachine } from './actors';
 import type { ScrubDirection } from './actors/scrub/types';
-import { cn } from './utils';
 
 type ItSpeaksProps = {
   direction: ScrubDirection;

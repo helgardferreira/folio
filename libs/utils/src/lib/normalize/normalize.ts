@@ -6,7 +6,6 @@
  * @param max The maximum of the range
  * @returns A number between 0 and 1 (can be <0 or >1 if value is outside the range)
  */
-// TODO: move this to shared `utils` library
 export function normalize(value: number, min: number, max: number): number {
   return (value - min) / (max - min);
 }
