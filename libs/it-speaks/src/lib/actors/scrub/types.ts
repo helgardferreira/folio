@@ -1,59 +1,41 @@
-// TODO: refactor this after initial implementation
-
-type ScrubDirection = 'x' | 'y';
-
-// TODO: implement this
-/*
-type ParentActor = ActorRef<
-  Snapshot<unknown>,
-  | { type: 'END_SCRUB' }
-  | { type: 'SCRUB'; percentage: number }
-  | { type: 'START_SCRUB'; percentage: number }
->;
-*/
+type ScrubDirection = 'bottom-top' | 'left-right' | 'right-left' | 'top-bottom';
 
 type ScrubActorContext = {
-  maxValue: number;
-  minValue: number;
-  // TODO: implement this
-  // parentActor: ParentActor;
-  percentage: number;
-  prevPosition: number;
-  scrubDirection: ScrubDirection;
-  scrubberRef: Element | undefined;
+  direction: ScrubDirection;
+  element: Element | undefined;
+  position: number;
 };
 
 type ScrubActorInput = {
-  maxValue: number;
-  minValue: number;
-  // TODO: implement this
-  // parentActor: ParentActor;
-  scrubDirection: ScrubDirection;
+  direction: ScrubDirection;
+  initialPosition?: number;
 };
 
-type EndScrubEvent = {
-  type: 'END_SCRUB';
+type AttachEvent = {
+  type: 'ATTACH';
+  element: Element;
 };
-
+type DetachEvent = {
+  type: 'DETACH';
+};
 type ScrubEvent = {
   type: 'SCRUB';
   position: number;
 };
-
-type StartScrubEvent = {
-  type: 'START_SCRUB';
+type ScrubStartEvent = {
+  type: 'SCRUB_START';
   position: number;
-  scrubberRef: Element;
 };
 
-type ScrubActorEvent = StartScrubEvent | ScrubEvent | EndScrubEvent;
+type ScrubActorEvent = AttachEvent | DetachEvent | ScrubEvent | ScrubStartEvent;
 
 export type {
-  EndScrubEvent,
+  AttachEvent,
+  DetachEvent,
   ScrubActorContext,
   ScrubActorEvent,
   ScrubActorInput,
   ScrubDirection,
   ScrubEvent,
-  StartScrubEvent,
+  ScrubStartEvent,
 };

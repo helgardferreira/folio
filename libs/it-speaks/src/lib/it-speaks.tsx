@@ -1,55 +1,73 @@
 import { useActorRef, useSelector } from '@xstate/react';
-import { type PointerEvent, useCallback, useEffect, useRef } from 'react';
+import { type PointerEvent, useCallback } from 'react';
 
 import { scrubMachine } from './actors';
+import type { ScrubDirection } from './actors/scrub/types';
 
-export function ItSpeaks() {
+type ItSpeaksProps = {
+  direction: ScrubDirection;
+};
+
+// TODO: reimplement it-speaks speech synthesis demo
+// TODO: continue here...
+export function ItSpeaks({ direction }: ItSpeaksProps) {
   const scrubActor = useActorRef(scrubMachine, {
-    input: { maxValue: 2, minValue: 0, scrubDirection: 'x' },
+    input: { direction },
   });
-  const percentage = useSelector(
-    scrubActor,
-    ({ context }) => context.percentage
-  );
-  const prevPosition = useSelector(
-    scrubActor,
-    ({ context }) => context.prevPosition
-  );
-  const scrubberRef = useRef<HTMLDivElement>(null);
 
-  const handlePointerDown = useCallback(
-    ({ clientX }: PointerEvent<HTMLDivElement>) => {
-      if (scrubberRef.current === null) return;
+  const position = useSelector(scrubActor, ({ context }) => context.position);
 
-      scrubActor.send({
-        type: 'START_SCRUB',
-        position: clientX,
-        scrubberRef: scrubberRef.current,
-      });
+  const handleScrubStart = useCallback(
+    ({ clientX }: PointerEvent<HTMLDivElement>) =>
+      scrubActor.send({ type: 'SCRUB_START', position: clientX }),
+    [scrubActor]
+  );
+
+  const setRef = useCallback(
+    <T extends Element>(element: T | null) => {
+      if (element !== null) scrubActor.send({ type: 'ATTACH', element });
+      return () => scrubActor.send({ type: 'DETACH' });
     },
     [scrubActor]
   );
 
-  // TODO: remove this after debugging
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    console.log({ percentage });
-  }, [percentage]);
-  useEffect(() => {
-    console.log({ prevPosition });
-  }, [prevPosition]);
-  // ---------------------------------------------------------------------------
-
   return (
-    <div className="rounded-box border-primary relative h-30 w-full border">
-      <div
-        // className="h-3 w-3 -translate-y-2 cursor-pointer rounded-lg bg-indigo-600"
-        className="bg-primary absolute z-10 size-10 cursor-pointer rounded-full"
-        onPointerDown={handlePointerDown}
-        ref={scrubberRef}
-        // style={{ left: `calc(${0.8 * 100}% - 5px` }}
-        style={{ left: prevPosition }}
-      />
+    <div className="rounded-box border-primary relative h-30 w-full overflow-hidden border-8 p-4">
+      {direction === 'bottom-top' && (
+        <div
+          className="bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full"
+          onPointerDown={handleScrubStart}
+          ref={setRef}
+          style={{ bottom: position }}
+        />
+      )}
+
+      {direction === 'left-right' && (
+        <div
+          className="bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full"
+          onPointerDown={handleScrubStart}
+          ref={setRef}
+          style={{ left: position }}
+        />
+      )}
+
+      {direction === 'right-left' && (
+        <div
+          className="bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full"
+          onPointerDown={handleScrubStart}
+          ref={setRef}
+          style={{ right: position }}
+        />
+      )}
+
+      {direction === 'top-bottom' && (
+        <div
+          className="bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full"
+          onPointerDown={handleScrubStart}
+          ref={setRef}
+          style={{ top: position }}
+        />
+      )}
     </div>
   );
 }

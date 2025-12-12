@@ -7,7 +7,13 @@ export function App() {
         <h1 className="text-3xl">Hello world</h1>
       </div>
 
-      <ItSpeaks />
+      <ItSpeaks direction="left-right" />
+
+      <ItSpeaks direction="right-left" />
+
+      <ItSpeaks direction="bottom-top" />
+
+      <ItSpeaks direction="top-bottom" />
 
       <button className="btn">Click Me</button>
     </div>
