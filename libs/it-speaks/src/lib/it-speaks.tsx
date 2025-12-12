@@ -1,8 +1,9 @@
 import { useActorRef, useSelector } from '@xstate/react';
-import { type PointerEvent, useCallback } from 'react';
+import { useCallback } from 'react';
 
 import { scrubMachine } from './actors';
 import type { ScrubDirection } from './actors/scrub/types';
+import { cn } from './utils';
 
 type ItSpeaksProps = {
   direction: ScrubDirection;
@@ -12,14 +13,19 @@ type ItSpeaksProps = {
 // TODO: continue here...
 export function ItSpeaks({ direction }: ItSpeaksProps) {
   const scrubActor = useActorRef(scrubMachine, {
-    input: { direction },
+    input: { direction, min: 0, max: 1000, initialValue: 250 },
   });
 
-  const position = useSelector(scrubActor, ({ context }) => context.position);
+  const isAttached = useSelector(scrubActor, (snapshot) =>
+    snapshot.matches('attached')
+  );
+  const percentage = useSelector(
+    scrubActor,
+    ({ context }) => context.percentage
+  );
 
   const handleScrubStart = useCallback(
-    ({ clientX }: PointerEvent<HTMLDivElement>) =>
-      scrubActor.send({ type: 'SCRUB_START', position: clientX }),
+    () => scrubActor.send({ type: 'SCRUB_START' }),
     [scrubActor]
   );
 
@@ -35,37 +41,61 @@ export function ItSpeaks({ direction }: ItSpeaksProps) {
     <div className="rounded-box border-primary relative h-30 w-full overflow-hidden border-8 p-4">
       {direction === 'bottom-top' && (
         <div
-          className="bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full"
+          className={cn(
+            'bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full select-none',
+            isAttached ? 'opacity-100' : 'opacity-0'
+          )}
           onPointerDown={handleScrubStart}
           ref={setRef}
-          style={{ bottom: position }}
+          style={{
+            bottom: `${percentage}%`,
+            transform: `translate3d(0, ${percentage}%, 0)`,
+          }}
         />
       )}
 
       {direction === 'left-right' && (
         <div
-          className="bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full"
+          className={cn(
+            'bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full select-none',
+            isAttached ? 'opacity-100' : 'opacity-0'
+          )}
           onPointerDown={handleScrubStart}
           ref={setRef}
-          style={{ left: position }}
+          style={{
+            left: `${percentage}%`,
+            transform: `translate3d(-${percentage}%, 0, 0)`,
+          }}
         />
       )}
 
       {direction === 'right-left' && (
         <div
-          className="bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full"
+          className={cn(
+            'bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full select-none',
+            isAttached ? 'opacity-100' : 'opacity-0'
+          )}
           onPointerDown={handleScrubStart}
           ref={setRef}
-          style={{ right: position }}
+          style={{
+            right: `${percentage}%`,
+            transform: `translate3d(${percentage}%, 0, 0)`,
+          }}
         />
       )}
 
       {direction === 'top-bottom' && (
         <div
-          className="bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full"
+          className={cn(
+            'bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full select-none',
+            isAttached ? 'opacity-100' : 'opacity-0'
+          )}
           onPointerDown={handleScrubStart}
           ref={setRef}
-          style={{ top: position }}
+          style={{
+            top: `${percentage}%`,
+            transform: `translate3d(0, -${percentage}%, 0)`,
+          }}
         />
       )}
     </div>

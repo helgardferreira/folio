@@ -3,15 +3,17 @@ import { type ActorRefFrom, fromEventObservable } from 'xstate';
 
 import type { EventObservableCreator } from '../../../types';
 import type { ScrubDirection, ScrubEvent } from '../types';
-import { computeScrubTrackEdges } from '../utils';
+import { getScrubTrackRect, lerp, normalize } from '../utils';
 
 type ScrubbingActorInput = {
   direction: ScrubDirection;
   element: Element | undefined;
+  max: number;
+  min: number;
 };
 
 const scrubbing: EventObservableCreator<ScrubEvent, ScrubbingActorInput> = ({
-  input: { direction, element },
+  input: { direction, element, max, min },
 }) => {
   if (element === undefined) {
     return throwError(
@@ -24,7 +26,7 @@ const scrubbing: EventObservableCreator<ScrubEvent, ScrubbingActorInput> = ({
     );
   }
 
-  const { bottom, left, right, top } = computeScrubTrackEdges(
+  const { bottom, height, left, right, top, width } = getScrubTrackRect(
     element,
     element.parentElement
   );
@@ -33,40 +35,40 @@ const scrubbing: EventObservableCreator<ScrubEvent, ScrubbingActorInput> = ({
     takeUntil(fromEvent<PointerEvent>(window, 'pointerup')),
     /*
      * Constrains the pointer within the scrubber's track and maps the pointer's
-     * coordinates to the `left` / `top` / `bottom` / `right` value for
-     * positioning the scrubber element.
+     * coordinates to a left / top / bottom / right `position` value (for
+     * positioning the scrubber element) as well as a linearly interpolated
+     * `value` between the configured `max` and `min` input parameters.
      *
      * The scrubber's track is defined as the area within the scrubber's
      * parent element's padding box edge offset by the scrubber element's
      * center point.
      */
-    map(({ clientX, clientY }) => {
+    map<PointerEvent, ScrubEvent>(({ clientX, clientY }) => {
+      let normalized: number;
       let position: number;
 
-      switch (direction) {
-        case 'bottom-top': {
-          position = Math.max(Math.min(bottom - clientY, bottom - top), 0);
-
-          break;
+      if (direction === 'bottom-top' || direction === 'top-bottom') {
+        if (direction === 'bottom-top') {
+          position = Math.max(Math.min(bottom - clientY, height), 0);
+        } else {
+          position = Math.max(Math.min(clientY - top, height), 0);
         }
-        case 'left-right': {
-          position = Math.max(Math.min(clientX - left, right - left), 0);
 
-          break;
+        normalized = normalize(position, 0, height);
+      } else {
+        if (direction === 'left-right') {
+          position = Math.max(Math.min(clientX - left, width), 0);
+        } else {
+          position = Math.max(Math.min(right - clientX, width), 0);
         }
-        case 'right-left': {
-          position = Math.max(Math.min(right - clientX, right - left), 0);
 
-          break;
-        }
-        case 'top-bottom': {
-          position = Math.max(Math.min(clientY - top, bottom - top), 0);
-
-          break;
-        }
+        normalized = normalize(position, 0, width);
       }
 
-      return { type: 'SCRUB', position } as ScrubEvent;
+      const percentage = normalized * 100;
+      const value = lerp(normalized, min, max);
+
+      return { type: 'SCRUB', percentage, position, value };
     })
   );
 };

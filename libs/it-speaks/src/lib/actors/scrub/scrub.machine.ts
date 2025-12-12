@@ -1,4 +1,10 @@
-import { type ActorRefFrom, type SnapshotFrom, assign, setup } from 'xstate';
+import {
+  type ActorRefFrom,
+  type SnapshotFrom,
+  assign,
+  enqueueActions,
+  setup,
+} from 'xstate';
 
 import { scrubbingLogic } from './actors/scrubbing.actor';
 import type {
@@ -8,9 +14,9 @@ import type {
   ScrubActorInput,
   ScrubEvent,
 } from './types';
+import { getScrubTrackRect, lerp, normalize } from './utils';
 
 // TODO: implement event emitters
-// TODO: implement percentage computation from `position` value (normalized between `0` and `1`)
 // TODO: continue here...
 const scrubMachine = setup({
   types: {
@@ -19,29 +25,69 @@ const scrubMachine = setup({
     input: {} as ScrubActorInput,
   },
   actions: {
-    attach: assign((_, { element }: Omit<AttachEvent, 'type'>) => ({
-      element,
-    })),
+    attach: enqueueActions(
+      ({ enqueue }, { element }: Omit<AttachEvent, 'type'>) => {
+        const parentElement = element.parentElement;
+
+        if (parentElement === null) {
+          return enqueue.raise({
+            type: 'ERROR',
+            error: new Error(
+              'Scrubber element must be a child of another element'
+            ),
+          });
+        }
+
+        enqueue.assign(({ context }) => {
+          const { direction, max, min, value } = context;
+          const { height, width } = getScrubTrackRect(element, parentElement);
+          const normalized = normalize(value, min, max);
+          const percentage = normalized * 100;
+
+          return direction === 'bottom-top' || direction === 'top-bottom'
+            ? { element, percentage, position: lerp(normalized, 0, height) }
+            : { element, percentage, position: lerp(normalized, 0, width) };
+        });
+      }
+    ),
     detach: assign(() => ({ element: undefined })),
     logError: (_, { error }: { error: unknown }) => console.error(error),
-    scrub: assign((_, { position }: Omit<ScrubEvent, 'type'>) => ({
-      position,
-    })),
+    scrub: assign(
+      (_, { percentage, position, value }: Omit<ScrubEvent, 'type'>) => ({
+        percentage,
+        position,
+        value,
+      })
+    ),
   },
   actors: {
     scrubbing: scrubbingLogic,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAdAQwBcC8UALSAYgBEBRAFQEEBhACQG0AGAXUVAAcA9rACWBYQIB2vEAA9EARgBsAThwAORQBYArMu0BmPdoBMajmoA0IAJ4LNi9QHZFHZcfnHH77Y8cBfPytUTFxCYjJIHGEIABswCgBlRgAlOgB9BKZkgFUAIU4eJBBBETFJaTkEFQ4cDkUtev1NR1dteStbBHltGq1tNU1NJWU1ZQ4vAKD0bHwiEnIIHGDsLGEJKAoISTAoiQA3AQBrHeWsABlhWAIwCTA0AukS0XEpIsr6hw5hx21FfTVjKZlB1EMYODVmvJ9H9lJpjMomvZJiBTrNwgsltMsKt1hQ7mgBGgcHwYoQAGaEgC2mJCFyuNzuDyKTzKr1A73qtW+v3+gNGIIQxmaOHh2n6dShLg0xmRqLC80ipxxGxoADkqBksnkmfwhM9ym9EB8uSofn8AUCBfpDDhfmNxopfvDutpZVi0QrFkq1htMjl8txHnrWRVEJp9DV4eHTJoxspFELHALjE0cGN5HUvl8M0K3SEcBAwOjKAw6IxWDrisGXqGuip1H09IYxaZzMm4ThuuZAZ5AYoAf5kRIBIX4EVTkHSjXDQgALSKAWzoW1cGrtdrwdTfPyiIQSf6tmyUFmHCGZQ-Dj9QFQ9o2I36U+AtxggawgzaTR5mY7jHROL7kMZw0NR1DUMxHB0J0hlvTpjE5a01BMeRBn7QFXUCFF3R-RUsWVADp3ZRB9FMU9lHPHor3cfQYOPVQvEdRwRgg5CXE3TD80LYs92ZasDUIhA4QFeQflPHpjB6LtHAtT8Aj8IA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAdAQwBcC8UALSAYgBEBRAFQEEBhACQG0AGAXUVAAcA9rACWBYQIB2vEAA9EAJgAc8nAEYAnAFZ5AZk3qdigCz7FANgA0IAJ6JVOlUfWqOigOwcdL+WeMBfPytUTFxCYjJIHGEIABswCgBlJgAlAFUAIQB9BMZkuk4eJBBBETFJaTkEN10cJXkjBrMjRVUzTytbBFVNMzVmtzMNZxcmxQCg9Gx8IhJyCBxg7CxhCSgKCEkwKIkANwEAay3FrGXVgukS0XEpIsrqlUUddTcvTQG9ew6FdUVaowH1IMOP1quMQMdpuE5gtJicVmswGg0AI0Dg+DFCAAzFEAWxhIVOUHORUuZRuoDu8geTxe3Xemk+NgUHE0OGeRnkbm8Zl8HA0YIhYVmkWOhMSKQyxP4Qiu5VuiAZ6hw7m88nUBiMZh8Xy6mg4OCab0Umh0bj1ZjcbgFsJwEDAUMoDDojFYUuKMrJFQUyjUWl0+kMJh+liZCCpbhwA00xqpvnUHCU1pCFBoyWSAHlkm7SdcvQgOTrWvq3M8dBw+aojOX5JpNAFAiAJAI7fAiscLh7c-KEABaEOdHs1dXDkcj8xJqZCiIQDulLsUxBPFQvTzqZpOeQcC06HVmHQ4Bxq3Tr4EWsYNwUzadRWJgWey8myRCKdQqLRmNeKBNKIw6HehqklXMLVK2BVQXz-HQJ1CK9oVFeF709bsGmLMsnnXV8txeHUa31TDay3VQ1V-MxoNte1hRnElOzlBddSMA8yzMfR6h6Bxa0LNo2WYzkOHjJQeR6es-CAA */
   id: 'scrub',
 
-  context: ({ input }) => ({
-    direction: input.direction,
+  context: ({ input: { direction, initialValue, max = 1, min = 0 } }) => ({
+    direction,
     element: undefined,
-    position: input.initialPosition ?? 0,
+    max,
+    min,
+    percentage: 0,
+    position: 0,
+    value: Math.max(Math.min(initialValue ?? 0, max), 0),
   }),
 
   initial: 'detached',
+
+  on: {
+    ERROR: {
+      target: '.detached',
+      actions: {
+        params: ({ event }) => ({ error: event.error }),
+        type: 'logError',
+      },
+    },
+  },
 
   states: {
     attached: {
@@ -68,6 +114,8 @@ const scrubMachine = setup({
             input: ({ context }) => ({
               direction: context.direction,
               element: context.element,
+              max: context.max,
+              min: context.min,
             }),
             onDone: {
               target: 'idle',
@@ -85,7 +133,11 @@ const scrubMachine = setup({
           on: {
             SCRUB: {
               actions: {
-                params: ({ event }) => ({ position: event.position }),
+                params: ({ event }) => ({
+                  percentage: event.percentage,
+                  position: event.position,
+                  value: event.value,
+                }),
                 type: 'scrub',
               },
             },

@@ -1,4 +1,4 @@
-// TODO: move this to shared library
+// TODO: move this to shared `actors` library
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   ActorSystem,

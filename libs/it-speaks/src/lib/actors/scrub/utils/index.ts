@@ -1,1 +1,3 @@
-export * from './compute-scrub-track-edges';
+export * from './get-scrub-track-rect';
+export * from './lerp';
+export * from './normalize';

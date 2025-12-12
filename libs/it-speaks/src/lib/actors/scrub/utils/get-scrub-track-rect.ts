@@ -1,14 +1,16 @@
-export type ScrubTrackEdges = {
+export type ScrubTrackRect = {
   bottom: number;
+  height: number;
   left: number;
   right: number;
   top: number;
+  width: number;
 };
 
-export function computeScrubTrackEdges<
+export function getScrubTrackRect<
   TChild extends Element,
   TParent extends Element,
->(childElement: TChild, parentElement: TParent): ScrubTrackEdges {
+>(childElement: TChild, parentElement: TParent): ScrubTrackRect {
   const childRect = childElement.getBoundingClientRect();
   const parentRect = parentElement.getBoundingClientRect();
 
@@ -19,19 +21,17 @@ export function computeScrubTrackEdges<
     borderBottomWidth,
   } = getComputedStyle(parentElement);
 
-  const trackEdgeLeft =
-    parentRect.left + parseFloat(borderLeftWidth) + childRect.width / 2;
-  const trackEdgeTop =
-    parentRect.top + parseFloat(borderTopWidth) + childRect.height / 2;
-  const trackEdgeRight =
-    parentRect.right - parseFloat(borderRightWidth) - childRect.width / 2;
-  const trackEdgeBottom =
+  const bottom =
     parentRect.bottom - parseFloat(borderBottomWidth) - childRect.height / 2;
+  const left =
+    parentRect.left + parseFloat(borderLeftWidth) + childRect.width / 2;
+  const right =
+    parentRect.right - parseFloat(borderRightWidth) - childRect.width / 2;
+  const top =
+    parentRect.top + parseFloat(borderTopWidth) + childRect.height / 2;
 
-  return {
-    bottom: trackEdgeBottom,
-    left: trackEdgeLeft,
-    right: trackEdgeRight,
-    top: trackEdgeTop,
-  };
+  const height = bottom - top;
+  const width = right - left;
+
+  return { bottom, height, left, right, top, width };
 }
