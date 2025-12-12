@@ -1,3 +1,9 @@
+/**
+ * All credit for this initial sync generator implementation goes to
+ * {@link https://github.com/juristr Juri Strumpflohner} from the
+ * {@link https://nx.dev/blog/setup-tailwind-4-npm-workspace Configure Tailwind 4 with Vite in an NPM Workspace: The Complete Guide}
+ * Nx blog.
+ */
 import { dirname, join, relative } from 'path';
 
 import {

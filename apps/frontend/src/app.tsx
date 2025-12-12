@@ -8,6 +8,8 @@ export function App() {
       </div>
 
       <ItSpeaks />
+
+      <button className="btn">Click Me</button>
     </div>
   );
 }
