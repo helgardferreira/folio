@@ -202,8 +202,23 @@ importers:
         specifier: 19.2.1
         version: 19.2.1(react@19.2.1)
 
+  libs/actors:
+    dependencies:
+      rxjs:
+        specifier: 7.8.2
+        version: 7.8.2
+      tslib:
+        specifier: 2.8.1
+        version: 2.8.1
+      xstate:
+        specifier: 5.25.0
+        version: 5.25.0
+
   libs/it-speaks:
     dependencies:
+      '@folio/actors':
+        specifier: workspace:*
+        version: link:../actors
       '@folio/utils':
         specifier: workspace:*
         version: link:../utils

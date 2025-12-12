@@ -1,4 +1,3 @@
-// TODO: move this to shared `actors` library
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   ActorScope,

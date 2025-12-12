@@ -1,9 +1,9 @@
 import { fromEvent, map, takeUntil, throwError } from 'rxjs';
 import { type ActorRefFrom, fromEventObservable } from 'xstate';
 
+import type { EventObservableCreator } from '@folio/actors';
 import { lerp, normalize } from '@folio/utils';
 
-import type { EventObservableCreator } from '../../../types';
 import { getScrubTrackRect } from '../get-scrub-track-rect';
 import type { ScrubDirection, ScrubEvent } from '../types';
 
