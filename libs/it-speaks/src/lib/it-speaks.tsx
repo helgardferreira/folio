@@ -1,5 +1,5 @@
 import { useActorRef, useSelector } from '@xstate/react';
-import { useCallback } from 'react';
+import { type PointerEvent, useCallback } from 'react';
 
 import { cn } from '@folio/utils';
 
@@ -11,22 +11,25 @@ type ItSpeaksProps = {
 };
 
 // TODO: reimplement it-speaks speech synthesis demo
+//       - instantiate word scrubber (effectively playback offset for speech synthesis)
+//       - instantiate volume scrubber
+//       - instantiate speed scrubber (effectively playback rate for speech synthesis)
+//       - use scrubbers in / with new `speechMachine` actor for basic it-speaks speech synthesis demo
+//       - finally, create 3D WebGL renderer for demo
 // TODO: continue here...
 export function ItSpeaks({ direction }: ItSpeaksProps) {
   const scrubActor = useActorRef(scrubMachine, {
     input: { direction, min: 0, max: 1000, initialValue: 250 },
   });
 
-  const isAttached = useSelector(scrubActor, (snapshot) =>
-    snapshot.matches('attached')
-  );
   const percentage = useSelector(
     scrubActor,
     ({ context }) => context.percentage
   );
 
   const handleScrubStart = useCallback(
-    () => scrubActor.send({ type: 'SCRUB_START' }),
+    ({ clientX, clientY }: PointerEvent<HTMLDivElement>) =>
+      scrubActor.send({ type: 'SCRUB_START', clientX, clientY }),
     [scrubActor]
   );
 
@@ -43,8 +46,7 @@ export function ItSpeaks({ direction }: ItSpeaksProps) {
       {direction === 'bottom-top' && (
         <div
           className={cn(
-            'bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full select-none',
-            isAttached ? 'opacity-100' : 'opacity-0'
+            'bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full select-none'
           )}
           onPointerDown={handleScrubStart}
           ref={setRef}
@@ -58,8 +60,7 @@ export function ItSpeaks({ direction }: ItSpeaksProps) {
       {direction === 'left-right' && (
         <div
           className={cn(
-            'bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full select-none',
-            isAttached ? 'opacity-100' : 'opacity-0'
+            'bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full select-none'
           )}
           onPointerDown={handleScrubStart}
           ref={setRef}
@@ -73,8 +74,7 @@ export function ItSpeaks({ direction }: ItSpeaksProps) {
       {direction === 'right-left' && (
         <div
           className={cn(
-            'bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full select-none',
-            isAttached ? 'opacity-100' : 'opacity-0'
+            'bg-primary absolute top-0 z-10 size-10 cursor-pointer rounded-full select-none'
           )}
           onPointerDown={handleScrubStart}
           ref={setRef}
@@ -88,8 +88,7 @@ export function ItSpeaks({ direction }: ItSpeaksProps) {
       {direction === 'top-bottom' && (
         <div
           className={cn(
-            'bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full select-none',
-            isAttached ? 'opacity-100' : 'opacity-0'
+            'bg-primary absolute left-0 z-10 size-10 cursor-pointer rounded-full select-none'
           )}
           onPointerDown={handleScrubStart}
           ref={setRef}

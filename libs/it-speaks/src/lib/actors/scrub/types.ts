@@ -28,6 +28,9 @@ type ErrorEvent = {
   type: 'ERROR';
   error: unknown;
 };
+type ScrubEndEvent = {
+  type: 'SCRUB_END';
+};
 type ScrubEvent = {
   type: 'SCRUB';
   percentage: number;
@@ -36,7 +39,11 @@ type ScrubEvent = {
 };
 type ScrubStartEvent = {
   type: 'SCRUB_START';
+  clientX: number;
+  clientY: number;
 };
+
+type ScrubActorEmittedEvent = ScrubEndEvent | ScrubEvent | ScrubStartEvent;
 
 type ScrubActorEvent =
   | AttachEvent
@@ -50,9 +57,11 @@ export type {
   DetachEvent,
   ErrorEvent,
   ScrubActorContext,
+  ScrubActorEmittedEvent,
   ScrubActorEvent,
   ScrubActorInput,
   ScrubDirection,
+  ScrubEndEvent,
   ScrubEvent,
   ScrubStartEvent,
 };

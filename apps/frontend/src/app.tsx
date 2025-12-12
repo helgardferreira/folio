@@ -9,12 +9,6 @@ export function App() {
 
       <ItSpeaks direction="left-right" />
 
-      <ItSpeaks direction="right-left" />
-
-      <ItSpeaks direction="bottom-top" />
-
-      <ItSpeaks direction="top-bottom" />
-
       <button className="btn">Click Me</button>
     </div>
   );
