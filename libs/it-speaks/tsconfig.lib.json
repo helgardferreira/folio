@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "esnext",
     "moduleResolution": "bundler",
     "outDir": "dist",
@@ -12,7 +13,8 @@
       "@nx/react/typings/image.d.ts",
       "node",
       "vite/client"
-    ]
+    ],
+    "verbatimModuleSyntax": true
   },
   "exclude": [
     "out-tsc",

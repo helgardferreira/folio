@@ -10,22 +10,10 @@
   "nx": {
     "name": "frontend",
     "targets": {
-      "build": {
-        "dependsOn": [
-          "^build"
-        ],
-        "syncGenerators": [
-          "@folio/tailwind-sync-plugin:update-tailwind-globs",
-          "@nx/js:typescript-sync"
-        ]
-      },
       "dev": {
+        "configurations": {},
         "dependsOn": [
           "watch-deps"
-        ],
-        "syncGenerators": [
-          "@folio/tailwind-sync-plugin:update-tailwind-globs",
-          "@nx/js:typescript-sync"
         ]
       }
     }

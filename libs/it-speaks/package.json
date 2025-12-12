@@ -14,6 +14,14 @@
       "default": "./dist/index.js"
     }
   },
+  "dependencies": {
+    "@xstate/react": "6.0.0",
+    "clsx": "2.1.1",
+    "react": "19.2.1",
+    "rxjs": "7.8.2",
+    "tailwind-merge": "3.3.1",
+    "xstate": "5.25.0"
+  },
   "nx": {
     "name": "it-speaks",
     "targets": {}

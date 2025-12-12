@@ -12,9 +12,6 @@
     ],
     "sharedGlobals": []
   },
-  "sync": {
-    "globalGenerators": ["@folio/tailwind-sync-plugin:update-tailwind-globs"]
-  },
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
