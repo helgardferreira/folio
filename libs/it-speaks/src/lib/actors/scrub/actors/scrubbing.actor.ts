@@ -8,26 +8,21 @@ import { getScrubTrackRect, scrubEventFrom } from '../utils';
 
 type ScrubbingActorInput = {
   direction: ScrubDirection;
-  element: Element | undefined;
+  scrubTrack: Element | undefined;
   max: number;
   min: number;
 };
 
 const scrubbing: EventObservableCreator<ScrubEvent, ScrubbingActorInput> = ({
-  input: { direction, element, max, min },
+  input: { direction, scrubTrack, max, min },
 }) => {
-  if (element === undefined) {
+  if (scrubTrack === undefined) {
     return throwError(
-      () => new Error('Scrubber element reference is undefined')
-    );
-  }
-  if (element.parentElement === null) {
-    return throwError(
-      () => new Error('Scrubber element must be a child of another element')
+      () => new Error('Scrub track element reference is undefined')
     );
   }
 
-  const scrubTrackRect = getScrubTrackRect(element, element.parentElement);
+  const scrubTrackRect = getScrubTrackRect(scrubTrack);
 
   return fromEvent<PointerEvent>(window, 'pointermove').pipe(
     takeUntil(fromEvent<PointerEvent>(window, 'pointerup')),

@@ -7,7 +7,7 @@ import {
   setup,
 } from 'xstate';
 
-import { lerp, normalize } from '@folio/utils';
+import { normalize } from '@folio/utils';
 
 import { scrubbingLogic } from './actors/scrubbing.actor';
 import type {
@@ -21,6 +21,7 @@ import type {
 } from './types';
 import { getScrubTrackRect, scrubEventFrom } from './utils';
 
+// TODO: implement keyboard interactions later
 const scrubMachine = setup({
   types: {
     context: {} as ScrubActorContext,
@@ -29,40 +30,20 @@ const scrubMachine = setup({
     input: {} as ScrubActorInput,
   },
   actions: {
-    attach: enqueueActions(
-      ({ enqueue }, { element }: Omit<AttachEvent, 'type'>) => {
-        const parentElement = element.parentElement;
+    attach: assign(({ context }, { scrubTrack }: Omit<AttachEvent, 'type'>) => {
+      const { max, min, value } = context;
+      const normalized = normalize(value, min, max);
+      const percentage = normalized * 100;
+      const scrubTrackRect = getScrubTrackRect(scrubTrack);
 
-        if (parentElement === null) {
-          return enqueue.raise({
-            type: 'ERROR',
-            error: new Error(
-              'Scrubber element must be a child of another element'
-            ),
-          });
-        }
-
-        enqueue.assign(({ context }) => {
-          const { direction, max, min, value } = context;
-          const { height, width } = getScrubTrackRect(element, parentElement);
-          const normalized = normalize(value, min, max);
-          const percentage = normalized * 100;
-
-          return direction === 'bottom-top' || direction === 'top-bottom'
-            ? { element, percentage, position: lerp(normalized, 0, height) }
-            : { element, percentage, position: lerp(normalized, 0, width) };
-        });
-      }
-    ),
-    detach: assign(() => ({ element: undefined })),
+      return { percentage, scrubTrack, scrubTrackRect };
+    }),
+    detach: assign({ scrubTrack: undefined, scrubTrackRect: undefined }),
     logError: (_, { error }: { error: unknown }) => console.error(error),
     scrub: enqueueActions(
-      (
-        { enqueue },
-        { percentage, position, value }: Omit<ScrubEvent, 'type'>
-      ) => {
-        enqueue.assign({ percentage, position, value });
-        enqueue.emit({ type: 'SCRUB', percentage, position, value });
+      ({ enqueue }, { percentage, value }: Omit<ScrubEvent, 'type'>) => {
+        enqueue.assign({ percentage, value });
+        enqueue.emit({ type: 'SCRUB', percentage, value });
       }
     ),
     scrubEnd: emit({ type: 'SCRUB_END' }),
@@ -76,29 +57,19 @@ const scrubMachine = setup({
     scrubbingEntry: enqueueActions(({ context, enqueue, event }) => {
       if (event.type !== 'SCRUB_START') return;
 
-      const { direction, element, max, min } = context;
+      const { direction, scrubTrack, max, min } = context;
       const { clientX, clientY } = event;
 
-      if (element === undefined) {
+      if (scrubTrack === undefined) {
         return enqueue.raise({
           type: 'ERROR',
-          error: new Error('Scrubber element reference is undefined'),
+          error: new Error('Scrub track element reference is undefined'),
         });
       }
 
-      const parentElement = element.parentElement;
+      const scrubTrackRect = getScrubTrackRect(scrubTrack);
 
-      if (parentElement === null) {
-        return enqueue.raise({
-          type: 'ERROR',
-          error: new Error(
-            'Scrubber element must be a child of another element'
-          ),
-        });
-      }
-
-      const scrubTrackRect = getScrubTrackRect(element, parentElement);
-
+      enqueue.assign({ scrubTrackRect });
       enqueue.raise(
         scrubEventFrom({
           clientX,
@@ -115,17 +86,17 @@ const scrubMachine = setup({
     scrubbing: scrubbingLogic,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAUQCUCB5AgbQAYBdRUABwHtYBLAF2YYDtaQAPRACwAmADQgAnogCMAZgAcAOgoB2IcopSArHKHDlmgGwBfI2NSYsCgIatWVlAAtIOACJ4AKgEEAwgAlKNEggjCzsXDz8CEIAnJoKcgYUBgZSUhQUahSaYpIIskIKAtGpWdHRQgbKcnKaJmbo2Na29k4QCswQADZgOADK3gQAqgBCAPq9XgTuATwhbBzcQZHKMgYK0QLKxUIyq8LVOdKGClIC1TJC2skUxXUg5o02do6QCg9YWMycUDgQXGDtTgANwYAGsAe9Pt8ZkE5mFFqBlqsFJoslIEpsztEVocotFFLplKopFshEIdMZTPcGpYni1XpCvj8wGg0Aw0Ao6J0bAAzdkAWzeNKhUBh9CY83CS0QKzWqM06IMmLk2JkuKEWXWygEMhUKVWKykQju7yaz1aQosIr6AxGYuCEvhEUQml2KL2mximjK2QkRwoCiV2kuNRiMlOJppCggYHNzk87i8fntcIWzrxcQSSRSaQy6l9uTJygUygMwcqen0UhMVM4DBj8CC71mjrT0oQAFoDLiO7pIxYzfSIC3Qm3EYIkgoZLE5GlZxpohlcQYZFOycUBJpVK6MgIBP3Hs0Xm0Ot0R5KEXxEIu1gYyXvSjIBLIBOqYvFkkXortDcoD7SjwtRlvnPJ1203AQpxnOc0ikRdRD9KJUXWDVvTg7RsS9f9o1jIdQLHK88kqdZokScoMjkTZVDkXEpESdYyzUBVqnXV0ayMIA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAUQCUCB5AgbQAYBdRUABwHtYBLAF2YYDtaQAPRACwAmADQgAnogCMAdgCsAOgpCKUgGwBmOQE4BUgBwapAX2NjUmLAoCGrVtZQALSDgAieACoBBAMIAJShokEEYWdi4efgQhbUV9NQo1NW0ZfSEpDX0ZNTFJBHVtBQFMuQEKCliynX1Tc3RsGzsHZwgFZggAGzAcAGUfAgBVACEAfR7vAg9AnlC2Dm5gqJkNNQVdVKTYuR0pXOk5CgU1ATkZGQE1DJkKjVqQCwbbeydIBQesLGZOKBwILjA2pwAG4MADWAPen2+02Cs3CC1ASxWCgOclkGkyKhkuwkiBWAgU+go+lOMm0ankyRkd3ejWeLTe9Q+Xx+YDQaAYaAUdA6tgAZpyALaMyxQqAw+hMOYRRaIZarVHozEUbF7aInNYqbb4lVCdI0pl05qvSEs3r9YYSkJS+GRRByDEo-EYk4CeTCNV6w7FYSnDICANyNQGywKCBgekuLwebz+K1w+Z26KxQkJTapdKZbKe44KbEYqTaKR6vRZASmMwgTgMcPwYLvGY2xOyhAAWhyuLbQg0a20ff7A-7t0rtKexogjbCzcRgkSCg0sX0Uj0yXiFAxas0871+iyGkSJIuwZHhrHL1a7S6k+lCL4iG0c7Uesyqg0mbknsMCikhbJQjkKjaPuJwho8TTniK2Bitetotq686LsuBRrhunZvoc1z6CkGQAdiAbHnUobhpGE6wk2MozvkFK9gkS6xD+BwaGqv5rMW5znCoUjKBQcgVsYQA */
   id: 'scrub',
 
   context: ({ input: { direction, initialValue, max = 1, min = 0 } }) => ({
     direction,
-    element: undefined,
     max,
     min,
     percentage: 0,
-    position: 0,
-    value: Math.max(Math.min(initialValue ?? 0, max), 0),
+    scrubTrack: undefined,
+    scrubTrackRect: undefined,
+    value: Math.max(Math.min(initialValue ?? min, max), min),
   }),
 
   initial: 'detached',
@@ -173,9 +144,9 @@ const scrubMachine = setup({
             id: 'scrubbing',
             input: ({ context }) => ({
               direction: context.direction,
-              element: context.element,
               max: context.max,
               min: context.min,
+              scrubTrack: context.scrubTrack,
             }),
             onDone: {
               actions: 'scrubEnd',
@@ -200,7 +171,6 @@ const scrubMachine = setup({
                 type: 'scrub',
                 params: ({ event }) => ({
                   percentage: event.percentage,
-                  position: event.position,
                   value: event.value,
                 }),
               },
@@ -213,7 +183,7 @@ const scrubMachine = setup({
       on: {
         ATTACH: {
           actions: {
-            params: ({ event }) => ({ element: event.element }),
+            params: ({ event }) => ({ scrubTrack: event.scrubTrack }),
             type: 'attach',
           },
           target: 'attached',

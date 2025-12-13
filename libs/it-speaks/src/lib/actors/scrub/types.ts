@@ -1,12 +1,14 @@
+import type { ScrubTrackRect } from './utils';
+
 type ScrubDirection = 'bottom-top' | 'left-right' | 'right-left' | 'top-bottom';
 
 type ScrubActorContext = {
   direction: ScrubDirection;
-  element: Element | undefined;
   max: number;
   min: number;
   percentage: number;
-  position: number;
+  scrubTrack: Element | undefined;
+  scrubTrackRect: ScrubTrackRect | undefined;
   value: number;
 };
 
@@ -19,7 +21,7 @@ type ScrubActorInput = {
 
 type AttachEvent = {
   type: 'ATTACH';
-  element: Element;
+  scrubTrack: Element;
 };
 type DetachEvent = {
   type: 'DETACH';
@@ -34,7 +36,6 @@ type ScrubEndEvent = {
 type ScrubEvent = {
   type: 'SCRUB';
   percentage: number;
-  position: number;
   value: number;
 };
 type ScrubStartEvent = {
