@@ -1,8 +1,6 @@
 import { lerp, normalize } from '@folio/utils';
 
-import type { ScrubDirection, ScrubEvent } from '../types';
-
-import type { ScrubTrackRect } from './get-scrub-track-rect';
+import type { ScrubDirection, ScrubEvent, ScrubTrackRect } from '../types';
 
 type ScrubEventFromOptions = {
   clientX: number;

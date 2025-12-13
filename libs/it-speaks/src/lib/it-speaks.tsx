@@ -1,10 +1,9 @@
-import { useActorRef, useSelector } from '@xstate/react';
-import { type PointerEvent, useCallback, useMemo } from 'react';
-
-import { cn } from '@folio/utils';
-
-import { scrubMachine } from './actors';
-import type { ScrubTrackOffset } from './actors/scrub/utils';
+import {
+  ScrubberHandle,
+  ScrubberProgress,
+  ScrubberRoot,
+  ScrubberTrack,
+} from '../components';
 
 // TODO: reimplement it-speaks speech synthesis demo
 //       - instantiate word scrubber (effectively playback offset for speech synthesis)
@@ -15,105 +14,68 @@ import type { ScrubTrackOffset } from './actors/scrub/utils';
 //       - reassess potential areas for cleanup / refactor afterwards
 // TODO: continue here...
 export function ItSpeaks() {
-  const MAX = 1000;
-  const MIN = 100;
-
-  const scrubActor = useActorRef(scrubMachine, {
-    input: { direction: 'left-right', initialValue: MIN, max: MAX, min: MIN },
-  });
-
-  const percentage = useSelector(
-    scrubActor,
-    ({ context }) => context.percentage
-  );
-  const scrubTrackRect = useSelector(
-    scrubActor,
-    ({ context }) => context.scrubTrackRect
-  );
-  const scrubTrackOffset = useMemo<ScrubTrackOffset>(
-    () => scrubTrackRect?.offset ?? { bottom: 0, left: 0, right: 0, top: 0 },
-    [scrubTrackRect]
-  );
-  const value = useSelector(scrubActor, ({ context }) => context.value);
-
-  const handleScrubStart = useCallback(
-    ({ clientX, clientY }: PointerEvent) =>
-      scrubActor.send({ type: 'SCRUB_START', clientX, clientY }),
-    [scrubActor]
-  );
-
-  const setRef = useCallback(
-    <T extends Element>(scrubTrack: T | null) => {
-      if (scrubTrack !== null) scrubActor.send({ type: 'ATTACH', scrubTrack });
-      return () => scrubActor.send({ type: 'DETACH' });
-    },
-    [scrubActor]
-  );
-
-  // TODO: split up into separate scrubber components
-  //       - `<ScrubberRoot />`
-  //       - `<ScrubberTrack />`
-  //       - `<ScrubberProgress />`
-  //       - `<ScrubberThumb />`
   return (
-    <div className="rounded-box border-primary relative h-30 w-full overflow-hidden border-2 p-5">
-      {/* Scrubber Root */}
-      <div
-        aria-label="Slider"
-        aria-valuemax={MAX}
-        aria-valuemin={MIN}
-        aria-valuenow={value}
-        className={cn(
-          'relative',
-          'z-10',
-          'h-6',
-          'w-full',
-          'overflow-visible',
-          'cursor-pointer'
-        )}
-        onPointerDown={handleScrubStart}
-        role="slider"
-        tabIndex={0}
+    <div className="rounded-box border-primary relative flex h-100 w-full flex-col gap-4 overflow-hidden border-2 p-5">
+      <ScrubberRoot
+        className="h-6 w-full"
+        direction="left-right"
+        initialValue={100}
+        label="Example Slider"
+        max={1000}
+        min={100}
       >
-        {/* Scrubber Track */}
-        <div
-          className={cn(
-            'absolute',
-            'bg-indigo-200',
-            'cursor-pointer',
-            'h-2',
-            'overflow-hidden',
-            'rounded-xl',
-            'top-1/2 left-0 -translate-y-1/2',
-            'touch-none',
-            'w-full'
-          )}
-          ref={setRef}
-        >
-          {/* Scrubber Progress */}
-          <div
-            className="absolute top-1/2 left-0 h-full -translate-y-1/2 bg-indigo-500"
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
+        <ScrubberTrack className="h-2 rounded-xl bg-indigo-200">
+          <ScrubberProgress className="bg-indigo-500" />
+        </ScrubberTrack>
 
-        {/* Scrubber Thumb */}
-        <div
-          className={cn(
-            '-translate-1/2',
-            'absolute',
-            'bg-indigo-600',
-            'cursor-pointer',
-            'rounded-full',
-            'select-none',
-            'size-4',
-            'top-1/2'
-          )}
-          style={{
-            left: `${percentage}%`,
-            transform: `translate3d(calc(${scrubTrackOffset.left}px - (${percentage} / 100 * ${scrubTrackOffset.right}px) - (${percentage} / 100 * ${scrubTrackOffset.left}px)), 0, 0)`,
-          }}
-        />
+        <ScrubberHandle className="size-4 bg-indigo-600" />
+      </ScrubberRoot>
+
+      <ScrubberRoot
+        className="h-6 w-full"
+        direction="right-left"
+        initialValue={100}
+        label="Example Slider"
+        max={1000}
+        min={100}
+      >
+        <ScrubberTrack className="h-2 rounded-xl bg-red-200">
+          <ScrubberProgress className="bg-red-500" />
+        </ScrubberTrack>
+
+        <ScrubberHandle className="size-4 bg-red-600" />
+      </ScrubberRoot>
+
+      <div className="flex h-50 gap-4">
+        <ScrubberRoot
+          className="h-full w-6"
+          direction="bottom-top"
+          initialValue={50}
+          label="Example Slider"
+          max={100}
+          min={0}
+        >
+          <ScrubberTrack className="w-2 rounded-xl bg-green-200">
+            <ScrubberProgress className="bg-green-500" />
+          </ScrubberTrack>
+
+          <ScrubberHandle className="size-4 bg-green-600" />
+        </ScrubberRoot>
+
+        <ScrubberRoot
+          className="h-full w-6"
+          direction="top-bottom"
+          initialValue={50}
+          label="Example Slider"
+          max={100}
+          min={0}
+        >
+          <ScrubberTrack className="w-2 rounded-xl bg-yellow-200">
+            <ScrubberProgress className="bg-yellow-500" />
+          </ScrubberTrack>
+
+          <ScrubberHandle className="size-4 bg-yellow-600" />
+        </ScrubberRoot>
       </div>
     </div>
   );

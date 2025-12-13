@@ -1,19 +1,4 @@
-export type ScrubTrackOffset = {
-  bottom: number;
-  left: number;
-  right: number;
-  top: number;
-};
-
-export type ScrubTrackRect = {
-  bottom: number;
-  height: number;
-  left: number;
-  offset: ScrubTrackOffset;
-  right: number;
-  top: number;
-  width: number;
-};
+import type { ScrubTrackOffset, ScrubTrackRect } from '../types';
 
 export function getScrubTrackRect<TElement extends Element>(
   scrubTrack: TElement

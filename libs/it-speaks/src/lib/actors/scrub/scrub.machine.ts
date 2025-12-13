@@ -21,7 +21,7 @@ import type {
 } from './types';
 import { getScrubTrackRect, scrubEventFrom } from './utils';
 
-// TODO: implement keyboard interactions later
+// TODO: implement keyboard interactions after implementing speech machine
 const scrubMachine = setup({
   types: {
     context: {} as ScrubActorContext,

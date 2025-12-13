@@ -1,6 +1,21 @@
-import type { ScrubTrackRect } from './utils';
-
 type ScrubDirection = 'bottom-top' | 'left-right' | 'right-left' | 'top-bottom';
+
+type ScrubTrackOffset = {
+  bottom: number;
+  left: number;
+  right: number;
+  top: number;
+};
+
+type ScrubTrackRect = {
+  bottom: number;
+  height: number;
+  left: number;
+  offset: ScrubTrackOffset;
+  right: number;
+  top: number;
+  width: number;
+};
 
 type ScrubActorContext = {
   direction: ScrubDirection;
@@ -65,4 +80,6 @@ export type {
   ScrubEndEvent,
   ScrubEvent,
   ScrubStartEvent,
+  ScrubTrackOffset,
+  ScrubTrackRect,
 };
