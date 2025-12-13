@@ -3,7 +3,7 @@ import {
   ScrubberProgress,
   ScrubberRoot,
   ScrubberTrack,
-} from '../components';
+} from './components';
 
 // TODO: reimplement it-speaks speech synthesis demo
 //       - instantiate word scrubber (effectively playback offset for speech synthesis)
