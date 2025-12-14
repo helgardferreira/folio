@@ -16,12 +16,16 @@ export function useScrubberPanel(
   const onPointerDownRef =
     useRef<PointerEventHandler<HTMLDivElement>>(onPointerDown);
 
+  useLayoutEffect(() => {
+    onPointerDownRef.current = onPointerDown;
+  }, [onPointerDown]);
+
   const max = useSelector(scrubActor, (snapshot) => snapshot.context.max);
   const min = useSelector(scrubActor, (snapshot) => snapshot.context.min);
   const value = useSelector(scrubActor, (snapshot) => snapshot.context.value);
 
   const panelClassName =
-    'relative z-10 cursor-pointer touch-none overflow-visible';
+    'focus-visible:outline-primary relative z-10 cursor-pointer touch-none overflow-visible focus-visible:outline-2';
 
   const handleScrubStart = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
@@ -34,10 +38,6 @@ export function useScrubberPanel(
     },
     [scrubActor]
   );
-
-  useLayoutEffect(() => {
-    onPointerDownRef.current = onPointerDown;
-  }, [onPointerDown]);
 
   return {
     handleScrubStart,

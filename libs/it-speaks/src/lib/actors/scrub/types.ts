@@ -1,3 +1,5 @@
+import type { ActorRef, Snapshot } from 'xstate';
+
 type ScrubDirection = 'bottom-top' | 'left-right' | 'right-left' | 'top-bottom';
 
 type ScrubTrackOffset = {
@@ -15,23 +17,6 @@ type ScrubTrackRect = {
   right: number;
   top: number;
   width: number;
-};
-
-type ScrubActorContext = {
-  direction: ScrubDirection;
-  max: number;
-  min: number;
-  percentage: number;
-  scrubTrack: Element | undefined;
-  scrubTrackRect: ScrubTrackRect | undefined;
-  value: number;
-};
-
-type ScrubActorInput = {
-  direction: ScrubDirection;
-  initialValue?: number;
-  max?: number;
-  min?: number;
 };
 
 type AttachEvent = {
@@ -59,7 +44,14 @@ type ScrubStartEvent = {
   clientY: number;
 };
 
-type ScrubActorEmittedEvent = ScrubEndEvent | ScrubEvent | ScrubStartEvent;
+type ScrubEmittedEvent = ScrubEvent & { id: string };
+type ScrubEndEmittedEvent = ScrubEndEvent & { id: string };
+type ScrubStartEmittedEvent = ScrubStartEvent & { id: string };
+
+type ScrubActorEmittedEvent =
+  | ScrubEmittedEvent
+  | ScrubEndEmittedEvent
+  | ScrubStartEmittedEvent;
 
 type ScrubActorEvent =
   | AttachEvent
@@ -67,6 +59,30 @@ type ScrubActorEvent =
   | ErrorEvent
   | ScrubEvent
   | ScrubStartEvent;
+
+type ParentActor = ActorRef<
+  Snapshot<unknown>,
+  ScrubEmittedEvent | ScrubEndEmittedEvent | ScrubStartEmittedEvent
+>;
+
+type ScrubActorContext = {
+  direction: ScrubDirection;
+  max: number;
+  min: number;
+  parentActor: ParentActor | undefined;
+  percentage: number;
+  scrubTrack: Element | undefined;
+  scrubTrackRect: ScrubTrackRect | undefined;
+  value: number;
+};
+
+type ScrubActorInput = {
+  direction: ScrubDirection;
+  initialValue?: number;
+  max?: number;
+  min?: number;
+  parentActor?: ParentActor;
+};
 
 export type {
   AttachEvent,
@@ -77,8 +93,11 @@ export type {
   ScrubActorEvent,
   ScrubActorInput,
   ScrubDirection,
+  ScrubEmittedEvent,
+  ScrubEndEmittedEvent,
   ScrubEndEvent,
   ScrubEvent,
+  ScrubStartEmittedEvent,
   ScrubStartEvent,
   ScrubTrackOffset,
   ScrubTrackRect,

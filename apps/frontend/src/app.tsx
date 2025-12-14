@@ -1,15 +1,17 @@
 import { ItSpeaks } from '@folio/it-speaks';
 
+// TODO: deploy portfolio
+// TODO: implement rest of portfolio
+// TODO: implement WebGL hand hero
+// TODO: implement all showcase pieces:
+//       - it-speaks
+//       - procedural-cities
+//       - globe
+// TODO: continue here...
 export function App() {
   return (
     <div className="flex w-full flex-col gap-8 p-8">
-      <div className="w-full rounded-md border border-neutral-950 p-8">
-        <h1 className="text-3xl">Hello world</h1>
-      </div>
-
       <ItSpeaks />
-
-      <button className="btn">Click Me</button>
     </div>
   );
 }

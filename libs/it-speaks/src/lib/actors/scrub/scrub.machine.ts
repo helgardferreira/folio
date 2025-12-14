@@ -2,7 +2,6 @@ import {
   type ActorRefFrom,
   type SnapshotFrom,
   assign,
-  emit,
   enqueueActions,
   setup,
 } from 'xstate';
@@ -41,18 +40,40 @@ const scrubMachine = setup({
     detach: assign({ scrubTrack: undefined, scrubTrackRect: undefined }),
     logError: (_, { error }: { error: unknown }) => console.error(error),
     scrub: enqueueActions(
-      ({ enqueue }, { percentage, value }: Omit<ScrubEvent, 'type'>) => {
+      (
+        { context, enqueue, self },
+        { percentage, value }: Omit<ScrubEvent, 'type'>
+      ) => {
         enqueue.assign({ percentage, value });
-        enqueue.emit({ type: 'SCRUB', percentage, value });
+        enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+        if (context.parentActor === undefined) return;
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
       }
     ),
-    scrubEnd: emit({ type: 'SCRUB_END' }),
-    scrubStart: emit(
-      (_, { clientX, clientY }: Omit<ScrubStartEvent, 'type'>) => ({
-        type: 'SCRUB_START',
-        clientX,
-        clientY,
-      })
+    scrubEnd: enqueueActions(({ context, enqueue, self }) => {
+      enqueue.emit({ type: 'SCRUB_END', id: self.id });
+      if (context.parentActor === undefined) return;
+      enqueue.sendTo(context.parentActor, { type: 'SCRUB_END', id: self.id });
+    }),
+    scrubStart: enqueueActions(
+      (
+        { context, enqueue, self },
+        { clientX, clientY }: Omit<ScrubStartEvent, 'type'>
+      ) => {
+        enqueue.emit({ type: 'SCRUB_START', clientX, clientY, id: self.id });
+        if (context.parentActor === undefined) return;
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB_START',
+          clientX,
+          clientY,
+          id: self.id,
+        });
+      }
     ),
     scrubbingEntry: enqueueActions(({ context, enqueue, event }) => {
       if (event.type !== 'SCRUB_START') return;
@@ -89,10 +110,13 @@ const scrubMachine = setup({
   /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAUQCUCB5AgbQAYBdRUABwHtYBLAF2YYDtaQAPRACwAmADQgAnogCMAdgCsAOgpCKUgGwBmOQE4BUgBwapAX2NjUmLAoCGrVtZQALSDgAieACoBBAMIAJShokEEYWdi4efgQhbUV9NQo1NW0ZfSEpDX0ZNTFJBHVtBQFMuQEKCliynX1Tc3RsGzsHZwgFZggAGzAcAGUfAgBVACEAfR7vAg9AnlC2Dm5gqJkNNQVdVKTYuR0pXOk5CgU1ATkZGQE1DJkKjVqQCwbbeydIBQesLGZOKBwILjA2pwAG4MADWAPen2+02Cs3CC1ASxWCgOclkGkyKhkuwkiBWAgU+go+lOMm0ankyRkd3ejWeLTe9Q+Xx+YDQaAYaAUdA6tgAZpyALaMyxQqAw+hMOYRRaIZarVHozEUbF7aInNYqbb4lVCdI0pl05qvSEs3r9YYSkJS+GRRByDEo-EYk4CeTCNV6w7FYSnDICANyNQGywKCBgekuLwebz+K1w+Z26KxQkJTapdKZbKe44KbEYqTaKR6vRZASmMwgTgMcPwYLvGY2xOyhAAWhyuLbQg0a20ff7A-7t0rtKexogjbCzcRgkSCg0sX0Uj0yXiFAxas0871+iyGkSJIuwZHhrHL1a7S6k+lCL4iG0c7Uesyqg0mbknsMCikhbJQjkKjaPuJwho8TTniK2Bitetotq686LsuBRrhunZvoc1z6CkGQAdiAbHnUobhpGE6wk2MozvkFK9gkS6xD+BwaGqv5rMW5znCoUjKBQcgVsYQA */
   id: 'scrub',
 
-  context: ({ input: { direction, initialValue, max = 1, min = 0 } }) => ({
+  context: ({
+    input: { direction, initialValue, max = 1, min = 0, parentActor },
+  }) => ({
     direction,
     max,
     min,
+    parentActor,
     percentage: 0,
     scrubTrack: undefined,
     scrubTrackRect: undefined,

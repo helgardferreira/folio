@@ -6,7 +6,7 @@ export function useScrubContext(): ScrubContextValue {
   const context = useContext(ScrubContext);
 
   if (context === null) {
-    throw new Error('useScrubContext must be used within a ScrubberRoot');
+    throw new Error('useScrubContext must be used within a ScrubProvider');
   }
 
   return context;

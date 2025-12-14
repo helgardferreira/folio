@@ -1,11 +1,13 @@
 import { type ActorRefFrom, type SnapshotFrom, setup } from 'xstate';
 
+import { scrubMachine } from '../scrub/scrub.machine';
+
 import type { SpeechActorContext, SpeechActorEvent } from './types';
 
 // TODO: refactor this
 // TODO: implement this
 //       - without scrubbing for first implementation
-//       - then figure out scrubbing composition
+//       - figure out scrubbing event handling with guarded transitions based on `id` on event payload
 // TODO: continue here...
 const speechMachine = setup({
   types: {
@@ -19,7 +21,6 @@ const speechMachine = setup({
     cancel
     load
     play
-    spawnScrubbers
     speedScrub
     voiceChanged
     voicesChanged
@@ -28,26 +29,12 @@ const speechMachine = setup({
     */
     // TODO: implement this
     /*
-    // TODO: maybe spawn scrubbers via `context` function rather than `entry` action?
-    spawnScrubbers: assign(() => {
-      const wordScrubActor = spawn(createScrubMachine('WORD', 'x', 0, 1));
-      const volumeScrubActor = spawn(createScrubMachine('VOLUME', 'x', 0, 1));
-      const speedScrubActor = spawn(createScrubMachine('SPEED', 'y', 0, 2));
-
-      return {
-        wordScrubActor,
-        volumeScrubActor,
-        speedScrubActor,
-      };
-    }),
-    */
-    // TODO: implement this
-    /*
     boundary: assign(({ wordIndex, length }) => {
       const newWordIndex = wordIndex + 1;
 
       return {
         wordIndex: newWordIndex,
+        // TODO: refactor this to account for percentage in scrubber no longer being normalized
         percentage: newWordIndex / length,
       };
     }),
@@ -83,6 +70,7 @@ const speechMachine = setup({
         utteranceRef,
         currentText: text,
         length,
+        // TODO: refactor this to account for percentage in scrubber no longer being normalized
         percentage: 0,
         wordIndex: 0,
       };
@@ -127,6 +115,7 @@ const speechMachine = setup({
         speechSynthesis.resume();
 
         return {
+          // TODO: refactor this to account for percentage in scrubber no longer being normalized
           percentage: wordIndex / length,
           utteranceRef: newUtteranceRef ?? utteranceRef,
         };
@@ -139,41 +128,54 @@ const speechMachine = setup({
     */
     // TODO: implement this
     /*
+    // TODO: refactor this to account for percentage in scrubber no longer being normalized
     volumeScrub: assign(({ utteranceRef }, { percentage }) => {
       if (utteranceRef) {
+        // TODO: refactor this to account for percentage in scrubber no longer being normalized
         utteranceRef.volume = percentage;
       }
 
+      // TODO: refactor this to account for percentage in scrubber no longer being normalized
       volumeSubject$.next(percentage);
 
       return {
+        // TODO: refactor this to account for percentage in scrubber no longer being normalized
         volume: percentage,
       };
     }),
     */
     // TODO: implement this
     /*
+    // TODO: refactor this to account for percentage in scrubber no longer being normalized
     speedScrub: assign(({ utteranceRef }, { percentage }) => {
       if (utteranceRef) {
+        // TODO: refactor this to account for percentage in scrubber no longer being normalized
         utteranceRef.rate = percentage;
       }
 
+      // TODO: refactor this to account for percentage in scrubber no longer being normalized
       rateSubject$.next(percentage);
 
       return {
+        // TODO: refactor this to account for percentage in scrubber no longer being normalized
         rate: percentage,
       };
     }),
     */
     // TODO: implement this
     /*
+    // TODO: refactor this to account for percentage in scrubber no longer being normalized
     wordScrub: assign(({ length }, { percentage }) => ({
+      // TODO: refactor this to account for percentage in scrubber no longer being normalized
       percentage,
+      // TODO: refactor this to account for percentage in scrubber no longer being normalized
       wordIndex: Math.trunc(percentage * length),
     })),
     */
   },
   actors: {
+    scrub: scrubMachine,
+
     // TODO: implement each of these
     /*
     boundary$
@@ -248,7 +250,21 @@ const speechMachine = setup({
   /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAKwB2ADQgAnsIAcMgHQBGajOoAWAJxCAzEKEAmavoC+xianTYc5APIEAIjXpIQzNpx59BCUROkJtEQVqQJE1ADZFRRlw7Wpw03M0TFwANRsASTIAZQB9PAAJYgBxUkc6PjcOLl4Xb219NXkRfSCZIRkNbRlAjTU-REUTMxALFJx0rNJ8oqJS8udGFmrPOsQGjXkhDRFwmX1OxRFdiIGEcPDNrt0gjUVtgxFE0eTseQBDDE4ANzAJzLIMxKZSclWWHlqoG8+ii8niGmoymoQkUGh6Mn6UkQmgUaiEyOUqjkEQxzzGb0+PzA8hQABt3pJWNwoDgAAoEACq2VIoJcVQhXmE3XkFwuIiEeP2uhkZzU2m0Sgl1BEgX0DXCarJrywHy+rF+NPpjOZOAAQjYOUR7AQAEoATV5S3cNUFAQ04Wa1GRKg1Gj6RjO8qa+gMHXC4o6inDCRG5J1lP11LpDKZLJtFDsCzBztWUOx1E2RzUanFRjuKkx-gOTTUrWRKvF3VrWss8b1BpQ7wArrBIGzyAQHRU+eCXWsfGoFFptPc5PEohrAz15A12sXtLX9jtTCNuEwIHA+HHsytIQJEBoziH5Ps9FGQzFRPoY0lW-JWBBaWATwLx9FFHClyIl6KJok2ZwdAorThOoiKdK0WgtikupUj+Y55ggUYKvCwEEmBGJnFECqKJOm4HI0YQdEhFLtkmRqpmhubnggagkSu+KtNE0FxEIS6bMqMgLoo2gapoajUW2VLyLAGAAE5dgARgpDEjjmZ7Qmo1DyGqjT6CGMJiuElaIA+8jugWDRRBiogSShibyBAPDfqpp6uqZHSGHppF6PoV5evIJbCZpcS+qiwyvshCYdt2vYQIx6mIOE+JKN08TdGEM6ooGdxbEEQkiY0fQ7sYQA */
   id: 'speech',
 
-  context: {
+  // TODO: refactor this to account for percentage in scrubber no longer being normalized
+  context: ({ self, spawn }) => ({
+    speedScrubActor: spawn('scrub', {
+      id: 'speed',
+      input: { direction: 'bottom-top', max: 2, min: 0, parentActor: self },
+    }),
+    volumeScrubActor: spawn('scrub', {
+      id: 'volume',
+      input: { direction: 'left-right', max: 1, min: 0, parentActor: self },
+    }),
+    wordScrubActor: spawn('scrub', {
+      id: 'word',
+      input: { direction: 'left-right', max: 1, min: 0, parentActor: self },
+    }),
+
     currentText: '',
     currentVoice: undefined,
     length: 0,
@@ -258,7 +274,7 @@ const speechMachine = setup({
     voices: [],
     volume: 1,
     wordIndex: 0,
-  },
+  }),
 
   initial: 'idle',
 
@@ -289,6 +305,27 @@ const speechMachine = setup({
       // actions: 'voiceChanged',
     },
 
+    // TODO: remove this after debugging
+    ////// ---------------------------------------------------------------------
+    /*
+    SCRUB: {
+      actions: ({ event }) => {
+        console.log('SCRUB', event);
+      },
+    },
+    SCRUB_END: {
+      actions: ({ event }) => {
+        console.log('SCRUB_END', event);
+      },
+    },
+    SCRUB_START: {
+      actions: ({ event }) => {
+        console.log('SCRUB_START', event);
+      },
+    },
+    */
+    ////// ---------------------------------------------------------------------
+
     // TODO: figure scrub actor composition out later
     /*
     'SPEED/SCRUB': {
@@ -307,13 +344,7 @@ const speechMachine = setup({
   },
 
   states: {
-    idle: {
-      // TODO: maybe spawn scrubbers via `context` function rather than `entry` action?
-      // TODO: figure scrub actor composition out later
-      /*
-      entry: 'spawnScrubbers',
-      */
-    },
+    idle: {},
 
     active: {
       initial: 'playing',

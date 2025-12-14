@@ -1,18 +1,23 @@
+import type { ScrubActorRef } from '../scrub/scrub.machine';
+import type {
+  ScrubEmittedEvent,
+  ScrubEndEmittedEvent,
+  ScrubStartEmittedEvent,
+} from '../scrub/types';
+
 type SpeechActorContext = {
   currentText: string;
   currentVoice: SpeechSynthesisVoice | undefined;
   length: number;
-  percentage: number; // percentage is normalized between 0 and 1
+  percentage: number;
   rate: number;
+  speedScrubActor: ScrubActorRef;
   utteranceRef: SpeechSynthesisUtterance | undefined;
   voices: SpeechSynthesisVoice[];
   volume: number;
+  volumeScrubActor: ScrubActorRef;
   wordIndex: number;
-
-  // TODO: figure scrub actor composition out later
-  // speedScrubActor: ScrubActorRef | undefined;
-  // volumeScrubActor: ScrubActorRef | undefined;
-  // wordScrubActor: ScrubActorRef | undefined;
+  wordScrubActor: ScrubActorRef;
 };
 
 type BoundaryEvent = {
@@ -52,19 +57,10 @@ type SpeechActorEvent =
   | PlayEvent
   | ReloadEvent
   | VoiceChangedEvent
-  | VoicesChangedEvent;
-// TODO: figure scrub actor composition out later
-/*
-  | WordStartScrubEvent
-  | WordScrubEvent
-  | WordEndScrubEvent
-  | VolumeStartScrubEvent
-  | VolumeScrubEvent
-  | VolumeEndScrubEvent
-  | SpeedStartScrubEvent
-  | SpeedScrubEvent
-  | SpeedEndScrubEvent
-*/
+  | VoicesChangedEvent
+  | ScrubEmittedEvent
+  | ScrubEndEmittedEvent
+  | ScrubStartEmittedEvent;
 
 export type {
   BoundaryEvent,
