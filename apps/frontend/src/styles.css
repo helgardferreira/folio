@@ -2,7 +2,7 @@
 @plugin 'daisyui';
 
 /* synced-sources:start */
-@source "../../../libs/it-speaks";
+@source '../../../libs/it-speaks';
 /* synced-sources:end */
 
 @layer base {

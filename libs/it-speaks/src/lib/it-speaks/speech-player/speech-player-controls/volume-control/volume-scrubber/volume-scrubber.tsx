@@ -1,32 +1,32 @@
 import { cn } from '@folio/utils';
 
-import type { ScrubActorRef } from '../../../actors';
+import type { ScrubActorRef } from '../../../../../actors';
 import {
   useScrubberHandle,
   useScrubberPanel,
   useScrubberProgress,
   useScrubberTrack,
-} from '../../../components';
+} from '../../../../../components';
 
-type WordScrubberProps = {
-  wordScrubActor: ScrubActorRef;
+type VolumeScrubberProps = {
+  volumeScrubActor: ScrubActorRef;
 };
 
-export function WordScrubber({ wordScrubActor }: WordScrubberProps) {
+export function VolumeScrubber({ volumeScrubActor }: VolumeScrubberProps) {
   const { handleScrubStart, max, min, panelClassName, value } =
-    useScrubberPanel(wordScrubActor);
-  const { setRef, trackClassName } = useScrubberTrack(wordScrubActor);
+    useScrubberPanel(volumeScrubActor);
+  const { setRef, trackClassName } = useScrubberTrack(volumeScrubActor);
   const { progressClassName, progressStyle } =
-    useScrubberProgress(wordScrubActor);
-  const { handleClassName, handleStyle } = useScrubberHandle(wordScrubActor);
+    useScrubberProgress(volumeScrubActor);
+  const { handleClassName, handleStyle } = useScrubberHandle(volumeScrubActor);
 
   return (
     <div
-      aria-label="Word Seek"
+      aria-label="Volume"
       aria-valuemax={max}
       aria-valuemin={min}
       aria-valuenow={value}
-      className={cn(panelClassName, 'h-6 w-full')}
+      className={cn(panelClassName, 'h-8 w-25')}
       onPointerDown={handleScrubStart}
       role="slider"
       tabIndex={0}

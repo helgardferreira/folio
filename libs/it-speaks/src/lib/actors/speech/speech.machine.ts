@@ -268,8 +268,9 @@ const speechMachine = setup({
       id: ScrubKind.Speed,
       input: {
         direction: 'bottom-top',
+        initialValue: 1,
         max: 2,
-        min: 0,
+        min: 0.25,
         parentActor: self,
       },
     }),
@@ -287,6 +288,7 @@ const speechMachine = setup({
       id: ScrubKind.Word,
       input: {
         direction: 'left-right',
+        initialValue: 0,
         max: 1,
         min: 0,
         parentActor: self,

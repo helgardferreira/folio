@@ -11,7 +11,7 @@ import { useSpeechContext } from '../../../../actors';
 
 import { VolumeScrubber } from './volume-scrubber/volume-scrubber';
 
-export function Volume() {
+export function VolumeControl() {
   const { speechActor } = useSpeechContext();
 
   const volumeScrubActor = useSelector(

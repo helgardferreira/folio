@@ -1,6 +1,6 @@
 import { cn } from '@folio/utils';
 
-import { type ScrubActorRef } from '../../../../../actors';
+import type { ScrubActorRef } from '../../../../../actors';
 import {
   useScrubberHandle,
   useScrubberPanel,
@@ -8,31 +8,31 @@ import {
   useScrubberTrack,
 } from '../../../../../components';
 
-type VolumeScrubberProps = {
-  volumeScrubActor: ScrubActorRef;
+type SpeedScrubberProps = {
+  speedScrubActor: ScrubActorRef;
 };
 
-export function VolumeScrubber({ volumeScrubActor }: VolumeScrubberProps) {
+export function SpeedScrubber({ speedScrubActor }: SpeedScrubberProps) {
   const { handleScrubStart, max, min, panelClassName, value } =
-    useScrubberPanel(volumeScrubActor);
-  const { setRef, trackClassName } = useScrubberTrack(volumeScrubActor);
+    useScrubberPanel(speedScrubActor);
+  const { setRef, trackClassName } = useScrubberTrack(speedScrubActor);
   const { progressClassName, progressStyle } =
-    useScrubberProgress(volumeScrubActor);
-  const { handleClassName, handleStyle } = useScrubberHandle(volumeScrubActor);
+    useScrubberProgress(speedScrubActor);
+  const { handleClassName, handleStyle } = useScrubberHandle(speedScrubActor);
 
   return (
     <div
-      aria-label="Volume"
+      aria-label="Playback Speed"
       aria-valuemax={max}
       aria-valuemin={min}
       aria-valuenow={value}
-      className={cn(panelClassName, 'h-8 w-25')}
+      className={cn(panelClassName, 'size-full')}
       onPointerDown={handleScrubStart}
       role="slider"
       tabIndex={0}
     >
       <div
-        className={cn(trackClassName, 'bg-primary/30 h-2 rounded-xl')}
+        className={cn(trackClassName, 'bg-primary/30 w-2 rounded-xl')}
         ref={setRef}
       >
         <div
