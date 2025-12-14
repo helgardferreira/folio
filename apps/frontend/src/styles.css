@@ -4,3 +4,10 @@
 /* synced-sources:start */
 @source "../../../libs/it-speaks";
 /* synced-sources:end */
+
+@layer base {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}

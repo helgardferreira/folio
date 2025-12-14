@@ -15,8 +15,4 @@ export default defineConfig(() => ({
     reporters: ['default'],
     watch: false,
   },
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
 }));

@@ -4,10 +4,17 @@ import { scrubMachine } from '../scrub/scrub.machine';
 
 import type { SpeechActorContext, SpeechActorEvent } from './types';
 
+enum ScrubKind {
+  Speed = 'speed',
+  Volume = 'volume',
+  Word = 'word',
+}
+
 // TODO: refactor this
 // TODO: implement this
 //       - without scrubbing for first implementation
 //       - figure out scrubbing event handling with guarded transitions based on `id` on event payload
+//       - should probably create bespoke `TOGGLE_VOLUME` event in `speechMachine`
 // TODO: continue here...
 const speechMachine = setup({
   types: {
@@ -246,23 +253,44 @@ const speechMachine = setup({
     },
     */
   },
+  guards: {
+    isSpeedScrub: (_, { id }: { id: string }) => id === ScrubKind.Speed,
+    isVolumeScrub: (_, { id }: { id: string }) => id === ScrubKind.Volume,
+    isWordScrub: (_, { id }: { id: string }) => id === ScrubKind.Word,
+  },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAKwB2ADQgAnsIAcMgHQBGajOoAWAJxCAzEKEAmavoC+xianTYc5APIEAIjXpIQzNpx59BCUROkJtEQVqQJE1ADZFRRlw7Wpw03M0TFwANRsASTIAZQB9PAAJYgBxUkc6PjcOLl4Xb219NXkRfSCZIRkNbRlAjTU-REUTMxALFJx0rNJ8oqJS8udGFmrPOsQGjXkhDRFwmX1OxRFdiIGEcPDNrt0gjUVtgxFE0eTseQBDDE4ANzAJzLIMxKZSclWWHlqoG8+ii8niGmoymoQkUGh6Mn6UkQmgUaiEyOUqjkEQxzzGb0+PzA8hQABt3pJWNwoDgAAoEACq2VIoJcVQhXmE3XkFwuIiEeP2uhkZzU2m0Sgl1BEgX0DXCarJrywHy+rF+NPpjOZOAAQjYOUR7AQAEoATV5S3cNUFAQ04Wa1GRKg1Gj6RjO8qa+gMHXC4o6inDCRG5J1lP11LpDKZLJtFDsCzBztWUOx1E2RzUanFRjuKkx-gOTTUrWRKvF3VrWss8b1BpQ7wArrBIGzyAQHRU+eCXWsfGoFFptPc5PEohrAz15A12sXtLX9jtTCNuEwIHA+HHsytIQJEBoziH5Ps9FGQzFRPoY0lW-JWBBaWATwLx9FFHClyIl6KJok2ZwdAorThOoiKdK0WgtikupUj+Y55ggUYKvCwEEmBGJnFECqKJOm4HI0YQdEhFLtkmRqpmhubnggagkSu+KtNE0FxEIS6bMqMgLoo2gapoajUW2VLyLAGAAE5dgARgpDEjjmZ7Qmo1DyGqjT6CGMJiuElaIA+8jugWDRRBiogSShibyBAPDfqpp6uqZHSGHppF6PoV5evIJbCZpcS+qiwyvshCYdt2vYQIx6mIOE+JKN08TdGEM6ooGdxbEEQkiY0fQ7sYQA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAOxCANCACewgMzSAdACZqADgUBOZWukAWbQulCAvofGp02HOQDyBACI16SEMzacefQQhHipCAKz6cgCMBhpBamoh1EYmIGaYuABqVgCSZADKAPp4ABLEAOKk9nR8LhxcvE6eOtpyQgpCygHKOkLSTdo+iEF+QsHU1PpBQtrK2tS6MaZoCTjJaaTZeUSFxY6MLOXuVYg6anJ+akIAbNrHysfRl9R+XQhB0YojQj2jagrDfsfG0+a46XgAEoAVQAQg5Sps3JVQNUlIo-OFpEEFGc2sdjncUT84jMLACQeCgutnFCKh5dtQgsFNLogsplEI-Iy1HdItQ5NIVKMXoydDocfF8UCwZQFCSytCKQguX0-ONpAFogoFPLlHdlD05NRZCcDJomszBXisHIAIYYTgANzAc1SZCWBSKEKckvJOwQQ21xzUAx6x16JwUmMkiFO8j8fiuIgiYz80mNf3NltYNrkKAANmaJKxuFAcAAFAjA9KkF0bVzu2GISPKOQYjGI64RY5BO69Ouq7TSYMTHQNIKJhLJ61gdNZnN5nCgqzAoi2AiAgCa5dJle21YQ2iCxzqA0RalOLRCYzu2iE+0VCiaQXCFy08qH2BHqbHmezufzgIoNjWkPXMICIgej7MMky3sGrbqCGvggQcDSyNoWhqFGDZPqaFqjumZoAK6wJAhbkAQK4lK6ZIbkB-jnHIKFcoeASfBM7bXnIegMtQRxjKigzGLE3BMBAcB8EKWD-lsgGeOoWJCBy7y9KMAxMpE2joXIrAQBmYBiVKHpKNS1A+n6XyBscwZ3G08gGKZYw3L6PYJrEIkvja2lVpR9LyAZvpUsZIimTBiCqp2owYu8mgccMqmYa+44fnmrkUZ43a1IqgyHFxIyKu2OjBI00jHCMHbKBMUUpmmsAYAATjhABGNWfglEmBZcig9no+UhaqrKhluEzereGLdneXylVhEA8FpZEAdKDR1sySgqlSHFfJ0PU6H4BwvMZBnbkFo0xSguH4RAjXSgVHInhMF4Xj0jTZbuBUtAV2hFSVvFAA */
   id: 'speech',
 
   // TODO: refactor this to account for percentage in scrubber no longer being normalized
   context: ({ self, spawn }) => ({
     speedScrubActor: spawn('scrub', {
-      id: 'speed',
-      input: { direction: 'bottom-top', max: 2, min: 0, parentActor: self },
+      id: ScrubKind.Speed,
+      input: {
+        direction: 'bottom-top',
+        max: 2,
+        min: 0,
+        parentActor: self,
+      },
     }),
     volumeScrubActor: spawn('scrub', {
-      id: 'volume',
-      input: { direction: 'left-right', max: 1, min: 0, parentActor: self },
+      id: ScrubKind.Volume,
+      input: {
+        direction: 'left-right',
+        initialValue: 1,
+        max: 1,
+        min: 0,
+        parentActor: self,
+      },
     }),
     wordScrubActor: spawn('scrub', {
-      id: 'word',
-      input: { direction: 'left-right', max: 1, min: 0, parentActor: self },
+      id: ScrubKind.Word,
+      input: {
+        direction: 'left-right',
+        max: 1,
+        min: 0,
+        parentActor: self,
+      },
     }),
 
     currentText: '',
@@ -308,6 +336,30 @@ const speechMachine = setup({
     // TODO: remove this after debugging
     ////// ---------------------------------------------------------------------
     /*
+    SCRUB: [
+      {
+        actions: () => console.log('speed scrub event'),
+        guard: {
+          params: ({ event }) => ({ id: event.id }),
+          type: 'isSpeedScrub',
+        },
+      },
+      {
+        actions: () => console.log('volume scrub event'),
+        guard: {
+          params: ({ event }) => ({ id: event.id }),
+          type: 'isVolumeScrub',
+        },
+      },
+      {
+        actions: () => console.log('word scrub event'),
+        guard: {
+          params: ({ event }) => ({ id: event.id }),
+          type: 'isWordScrub',
+        },
+      },
+    ],
+
     SCRUB: {
       actions: ({ event }) => {
         console.log('SCRUB', event);
@@ -324,9 +376,7 @@ const speechMachine = setup({
       },
     },
     */
-    ////// ---------------------------------------------------------------------
 
-    // TODO: figure scrub actor composition out later
     /*
     'SPEED/SCRUB': {
       actions: 'speedScrub',
@@ -341,6 +391,7 @@ const speechMachine = setup({
       actions: ['volumeScrub'],
     },
     */
+    ////// ---------------------------------------------------------------------
   },
 
   states: {
@@ -405,6 +456,7 @@ const speechMachine = setup({
           */
         },
 
+        // TODO: reevaluate 'done' state
         done: {},
 
         paused: {

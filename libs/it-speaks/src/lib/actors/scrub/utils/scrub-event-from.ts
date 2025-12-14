@@ -1,4 +1,4 @@
-import { lerp, normalize } from '@folio/utils';
+import { clamp, lerp, normalize } from '@folio/utils';
 
 import type { ScrubDirection, ScrubEvent, ScrubTrackRect } from '../types';
 
@@ -26,9 +26,9 @@ export function scrubEventFrom({
     let clamped: number;
 
     if (direction === 'bottom-top') {
-      clamped = Math.max(Math.min(bottom - clientY, height), 0);
+      clamped = clamp(bottom - clientY, 0, height);
     } else {
-      clamped = Math.max(Math.min(clientY - top, height), 0);
+      clamped = clamp(clientY - top, 0, height);
     }
 
     normalized = normalize(clamped, 0, height);
@@ -36,9 +36,9 @@ export function scrubEventFrom({
     let clamped: number;
 
     if (direction === 'left-right') {
-      clamped = Math.max(Math.min(clientX - left, width), 0);
+      clamped = clamp(clientX - left, 0, width);
     } else {
-      clamped = Math.max(Math.min(right - clientX, width), 0);
+      clamped = clamp(right - clientX, 0, width);
     }
 
     normalized = normalize(clamped, 0, width);

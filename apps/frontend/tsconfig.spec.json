@@ -27,7 +27,11 @@
     "src/**/*.test.js",
     "src/**/*.test.jsx",
     "src/**/*.test.ts",
-    "src/**/*.test.tsx"
+    "src/**/*.test.tsx",
+    "vite.config.mts",
+    "vite.config.ts",
+    "vitest.config.mts",
+    "vitest.config.ts"
   ],
   "references": [
     {

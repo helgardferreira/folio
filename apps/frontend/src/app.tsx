@@ -10,7 +10,7 @@ import { ItSpeaks } from '@folio/it-speaks';
 // TODO: continue here...
 export function App() {
   return (
-    <div className="flex w-full flex-col gap-8 p-8">
+    <div className="grid h-screen w-screen place-items-center overflow-hidden p-8">
       <ItSpeaks />
     </div>
   );

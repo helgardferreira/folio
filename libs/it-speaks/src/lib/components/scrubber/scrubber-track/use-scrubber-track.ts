@@ -9,7 +9,10 @@ export function useScrubberTrack(
   scrubActor: ScrubActorRef,
   ref?: Ref<HTMLDivElement>
 ) {
-  const direction = useSelector(scrubActor, ({ context }) => context.direction);
+  const direction = useSelector(
+    scrubActor,
+    (snapshot) => snapshot.context.direction
+  );
 
   const trackClassName = useMemo(
     () =>

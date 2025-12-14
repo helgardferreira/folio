@@ -18,7 +18,7 @@ export function SpeechPlayer() {
   return (
     <div
       className={cn(
-        'bg-base-content absolute bottom-10 left-1/2 flex w-4/5 -translate-x-1/2 flex-col gap-1 rounded-md px-6 py-3'
+        'bg-primary-content absolute bottom-10 left-1/2 flex w-4/5 -translate-x-1/2 flex-col gap-1 rounded-md px-6 py-3'
       )}
     >
       <WordScrubber wordScrubActor={wordScrubActor} />

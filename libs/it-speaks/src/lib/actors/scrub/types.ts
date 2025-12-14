@@ -43,6 +43,23 @@ type ScrubStartEvent = {
   clientX: number;
   clientY: number;
 };
+type SetPercentageEvent = {
+  type: 'SET_PERCENTAGE';
+  percentage: number;
+};
+type SetValueEvent = {
+  type: 'SET_VALUE';
+  value: number;
+};
+
+type ScrubActorEvent =
+  | AttachEvent
+  | DetachEvent
+  | ErrorEvent
+  | ScrubEvent
+  | ScrubStartEvent
+  | SetPercentageEvent
+  | SetValueEvent;
 
 type ScrubEmittedEvent = ScrubEvent & { id: string };
 type ScrubEndEmittedEvent = ScrubEndEvent & { id: string };
@@ -52,13 +69,6 @@ type ScrubActorEmittedEvent =
   | ScrubEmittedEvent
   | ScrubEndEmittedEvent
   | ScrubStartEmittedEvent;
-
-type ScrubActorEvent =
-  | AttachEvent
-  | DetachEvent
-  | ErrorEvent
-  | ScrubEvent
-  | ScrubStartEvent;
 
 type ParentActor = ActorRef<
   Snapshot<unknown>,
@@ -101,4 +111,6 @@ export type {
   ScrubStartEvent,
   ScrubTrackOffset,
   ScrubTrackRect,
+  SetPercentageEvent,
+  SetValueEvent,
 };

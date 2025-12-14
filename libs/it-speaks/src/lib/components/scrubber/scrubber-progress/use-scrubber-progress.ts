@@ -6,10 +6,13 @@ import { cn } from '@folio/utils';
 import type { ScrubActorRef } from '../../../actors';
 
 export function useScrubberProgress(scrubActor: ScrubActorRef) {
-  const direction = useSelector(scrubActor, ({ context }) => context.direction);
+  const direction = useSelector(
+    scrubActor,
+    (snapshot) => snapshot.context.direction
+  );
   const percentage = useSelector(
     scrubActor,
-    ({ context }) => context.percentage
+    (snapshot) => snapshot.context.percentage
   );
 
   const progressClassName = useMemo(

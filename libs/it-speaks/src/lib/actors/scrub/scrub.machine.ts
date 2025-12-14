@@ -6,7 +6,7 @@ import {
   setup,
 } from 'xstate';
 
-import { normalize } from '@folio/utils';
+import { clamp, lerp, normalize } from '@folio/utils';
 
 import { scrubbingLogic } from './actors/scrubbing.actor';
 import type {
@@ -17,6 +17,8 @@ import type {
   ScrubActorInput,
   ScrubEvent,
   ScrubStartEvent,
+  SetPercentageEvent,
+  SetValueEvent,
 } from './types';
 import { getScrubTrackRect, scrubEventFrom } from './utils';
 
@@ -102,12 +104,47 @@ const scrubMachine = setup({
         })
       );
     }),
+    setPercentage: enqueueActions(
+      (
+        { context, enqueue, self },
+        params: Omit<SetPercentageEvent, 'type'>
+      ) => {
+        const percentage = clamp(params.percentage, 0, 100);
+        const value = lerp(percentage / 100, context.min, context.max);
+
+        enqueue.assign({ percentage, value });
+        enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+        if (context.parentActor === undefined) return;
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
+      }
+    ),
+    setValue: enqueueActions(
+      ({ context, enqueue, self }, params: Omit<SetValueEvent, 'type'>) => {
+        const value = clamp(params.value, context.min, context.max);
+        const percentage = normalize(value, context.min, context.max) * 100;
+
+        enqueue.assign({ percentage, value });
+        enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+        if (context.parentActor === undefined) return;
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
+      }
+    ),
   },
   actors: {
     scrubbing: scrubbingLogic,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAUQCUCB5AgbQAYBdRUABwHtYBLAF2YYDtaQAPRACwAmADQgAnogCMAdgCsAOgpCKUgGwBmOQE4BUgBwapAX2NjUmLAoCGrVtZQALSDgAieACoBBAMIAJShokEEYWdi4efgQhbUV9NQo1NW0ZfSEpDX0ZNTFJBHVtBQFMuQEKCliynX1Tc3RsGzsHZwgFZggAGzAcAGUfAgBVACEAfR7vAg9AnlC2Dm5gqJkNNQVdVKTYuR0pXOk5CgU1ATkZGQE1DJkKjVqQCwbbeydIBQesLGZOKBwILjA2pwAG4MADWAPen2+02Cs3CC1ASxWCgOclkGkyKhkuwkiBWAgU+go+lOMm0ankyRkd3ejWeLTe9Q+Xx+YDQaAYaAUdA6tgAZpyALaMyxQqAw+hMOYRRaIZarVHozEUbF7aInNYqbb4lVCdI0pl05qvSEs3r9YYSkJS+GRRByDEo-EYk4CeTCNV6w7FYSnDICANyNQGywKCBgekuLwebz+K1w+Z26KxQkJTapdKZbKe44KbEYqTaKR6vRZASmMwgTgMcPwYLvGY2xOyhAAWhyuLbQg0a20ff7A-7t0rtKexogjbCzcRgkSCg0sX0Uj0yXiFAxas0871+iyGkSJIuwZHhrHL1a7S6k+lCL4iG0c7Uesyqg0mbknsMCikhbJQjkKjaPuJwho8TTniK2Bitetotq686LsuBRrhunZvoc1z6CkGQAdiAbHnUobhpGE6wk2MozvkFK9gkS6xD+BwaGqv5rMW5znCoUjKBQcgVsYQA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAUQCUCB5AgbQAYBdRUABwHtYBLAF2YYDtaQAPRACwAmADQgAnoiEBOAQDoAjAooUAbMIAcAgOzaAzNIC+hsakxY5AQ1atLKABaQcAETwAVAIIBhABKUaSCCMLOxcPPwIMgCschqqalF62hpJegICYpKRanLSCqp52tJ6elFRCsLGpujYVjZ2jhByzBAANmA4AMpeBACqAEIA+p2eBG7+PMFsHNyBEfqquToaGgpCAhTaFNIamYgKURRy6lFFUUIUBhqJqlUgZrXWtg6Qcg9YWMycUDgQXGDNTgANwYAGsAe9Pt8JoEpqFZqB5npFodznptvEdAo9ghkfINBQ4gppDtVKdlFE7u86s9Gm8ah8vj8wGg0Aw0HI6K1rAAzdkAW3p5ihUBh9CY0zCc0QCzkqKE6OkmO02IkUgEMWkF1OJTyCg0QgUVIZNIar0hTK6PQGYqCEvh4UQiT0crxUQK5WJ6RxQgucgEaSEBtUyQqQm0xvMcggYFpTg8bk8vltcJmjsi0hicQSSRS+m9atxFCEijyqnRAjyNxDkce9ReEC67kGAAVCF48AA5TwAcTwKftaelCFU6jkJWuE5k0mSGUL5W0ckJFwJpxDaiExhMIE4DBj8EC70mg6liMQAFpVDjz+slyoKAoinpfdpK4TaxYnmaIMeQkOzwgGyLAYUSrK+Wrlnkc5ZOW46+hoM7xMSEERtu1Jfg2zRtGAv6SgifCINIOSqL6AgHGso5qKqWRBi6SgziSJE6Fs1wfqamEWt8uEOsOGryCBYGVkIkEVDiz5HCxJJoqoaxFGxMZxj+sInvhET5IujHbJcyQkVoYmPnewkKpWSrxBoW6GEAA */
   id: 'scrub',
 
   context: ({
@@ -120,7 +157,7 @@ const scrubMachine = setup({
     percentage: 0,
     scrubTrack: undefined,
     scrubTrackRect: undefined,
-    value: Math.max(Math.min(initialValue ?? min, max), min),
+    value: clamp(initialValue ?? min, min, max),
   }),
 
   initial: 'detached',
@@ -143,6 +180,18 @@ const scrubMachine = setup({
         DETACH: {
           actions: 'detach',
           target: 'detached',
+        },
+        SET_PERCENTAGE: {
+          actions: {
+            params: ({ event }) => ({ percentage: event.percentage }),
+            type: 'setPercentage',
+          },
+        },
+        SET_VALUE: {
+          actions: {
+            params: ({ event }) => ({ value: event.value }),
+            type: 'setValue',
+          },
         },
       },
 
