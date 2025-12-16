@@ -1,21 +1,16 @@
 import { useSelector } from '@xstate/react';
 import { type KeyboardEvent, useCallback } from 'react';
 
-import type { VoiceSelectorActorRef } from '../actors';
+import { useSpeechContext } from '../../../../../actors';
 
 import { VoiceListItem } from './voice-list-item/voice-list-item';
 
-type VoiceListProps = {
-  // TODO: figure out better way to handle `voiceSelectorActor` than just prop drilling
-  voiceSelectorActor: VoiceSelectorActorRef;
-};
+export function VoiceList() {
+  const { voiceSelectorActor } = useSpeechContext();
 
-// TODO: implement this
-// TODO: continue here...
-export function VoiceList({ voiceSelectorActor }: VoiceListProps) {
   const activeId = useSelector(
     voiceSelectorActor,
-    (snapshot) => snapshot.context.activeId
+    (snapshot) => snapshot.context.activeVoiceItem?.id
   );
   const voiceItems = useSelector(
     voiceSelectorActor,
@@ -67,11 +62,7 @@ export function VoiceList({ voiceSelectorActor }: VoiceListProps) {
       tabIndex={0}
     >
       {voiceItems.map((voiceItem) => (
-        <VoiceListItem
-          key={voiceItem.id}
-          voiceItem={voiceItem}
-          voiceSelectorActor={voiceSelectorActor}
-        />
+        <VoiceListItem key={voiceItem.id} voiceItem={voiceItem} />
       ))}
     </ul>
   );

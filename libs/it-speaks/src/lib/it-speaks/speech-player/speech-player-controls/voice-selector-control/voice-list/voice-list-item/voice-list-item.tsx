@@ -3,35 +3,28 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 
 import { cn } from '@folio/utils';
 
-import type { VoiceItem, VoiceSelectorActorRef } from '../../actors';
+import { type VoiceItem, useSpeechContext } from '../../../../../../actors';
 
 type VoiceListItemProps = {
   voiceItem: VoiceItem;
-  // TODO: figure out better way to handle `voiceSelectorActor` than just prop drilling
-  voiceSelectorActor: VoiceSelectorActorRef;
 };
 
-// TODO: implement this
-// TODO: continue here...
-export function VoiceListItem({
-  voiceItem,
-  voiceSelectorActor,
-}: VoiceListItemProps) {
+export function VoiceListItem({ voiceItem }: VoiceListItemProps) {
   const ref = useRef<HTMLLIElement>(null);
+  const { voiceSelectorActor } = useSpeechContext();
 
   const activeId = useSelector(
     voiceSelectorActor,
-    (snapshot) => snapshot.context.activeId
+    (snapshot) => snapshot.context.activeVoiceItem?.id
   );
   const selectedId = useSelector(
     voiceSelectorActor,
-    (snapshot) => snapshot.context.selectedId
+    (snapshot) => snapshot.context.selectedVoiceItem?.id
   );
 
   const isActive = activeId === voiceItem.id;
   const isSelected = selectedId === voiceItem.id;
 
-  // useEffect(() => {
   useLayoutEffect(() => {
     if (!isActive) return;
 

@@ -3,17 +3,17 @@ import { useCallback } from 'react';
 
 import { cn } from '@folio/utils';
 
-import { type ScrubActorRef } from '../../../../../actors';
+import { useSpeechContext } from '../../../../../actors';
 
 type SpeedMultiplierButtonProps = {
   multiplier: number;
-  speedScrubActor: ScrubActorRef;
 };
 
 export function SpeedMultiplierButton({
   multiplier,
-  speedScrubActor,
 }: SpeedMultiplierButtonProps) {
+  const { speedScrubActor } = useSpeechContext();
+
   const formattedMultiplier = multiplier.toFixed(2);
 
   const currentMultiplier = useSelector(speedScrubActor, (snapshot) =>

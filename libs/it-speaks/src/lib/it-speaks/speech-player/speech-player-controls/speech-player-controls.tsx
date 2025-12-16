@@ -3,7 +3,6 @@ import { SpeedControl } from './speed-control/speed-control';
 import { VoiceSelectorControl } from './voice-selector-control/voice-selector-control';
 import { VolumeControl } from './volume-control/volume-control';
 
-// TODO: implement this
 export function SpeechPlayerControls() {
   return (
     <div className="text-primary flex justify-between">

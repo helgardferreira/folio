@@ -12,12 +12,7 @@ import {
 import { SpeechPlayerControls } from './speech-player-controls/speech-player-controls';
 
 export function SpeechPlayer() {
-  const { speechActor } = useSpeechContext();
-
-  const wordScrubActor = useSelector(
-    speechActor,
-    (snapshot) => snapshot.context.wordScrubActor
-  );
+  const { speechActor, wordScrubActor } = useSpeechContext();
 
   // TODO: remove this after debugging
   // ---------------------------------------------------------------------------

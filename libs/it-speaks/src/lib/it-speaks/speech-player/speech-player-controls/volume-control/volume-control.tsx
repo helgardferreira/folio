@@ -16,12 +16,7 @@ import {
 } from '../../../../components';
 
 export function VolumeControl() {
-  const { speechActor } = useSpeechContext();
-
-  const volumeScrubActor = useSelector(
-    speechActor,
-    (snapshot) => snapshot.context.volumeScrubActor
-  );
+  const { volumeScrubActor } = useSpeechContext();
 
   const volumePercentage = useSelector(
     volumeScrubActor,

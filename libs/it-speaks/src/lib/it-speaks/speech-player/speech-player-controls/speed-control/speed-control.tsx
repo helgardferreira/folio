@@ -16,12 +16,7 @@ const SPEED_MULTIPLIERS: number[] = [2, 1.75, 1.5, 1.25, 1, 0.75, 0.5, 0.25];
 // TODO: implement close on click outside logic
 // TODO: create shared dropdown components
 export function SpeedControl() {
-  const { speechActor } = useSpeechContext();
-
-  const speedScrubActor = useSelector(
-    speechActor,
-    (snapshot) => snapshot.context.speedScrubActor
-  );
+  const { speedScrubActor } = useSpeechContext();
 
   const currentMultiplier = useSelector(speedScrubActor, (snapshot) =>
     snapshot.context.value.toFixed(2)
@@ -53,11 +48,7 @@ export function SpeedControl() {
 
         <div className="flex flex-col items-end justify-between font-mono">
           {SPEED_MULTIPLIERS.map((multiplier) => (
-            <SpeedMultiplierButton
-              key={multiplier}
-              multiplier={multiplier}
-              speedScrubActor={speedScrubActor}
-            />
+            <SpeedMultiplierButton key={multiplier} multiplier={multiplier} />
           ))}
         </div>
 

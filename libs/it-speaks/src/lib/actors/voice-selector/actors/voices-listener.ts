@@ -3,14 +3,14 @@ import { type ActorRefFrom, fromEventObservable } from 'xstate';
 
 import type { EventObservableCreator } from '@folio/actors';
 
-import type { VoicesChangedEvent } from '../types';
+import type { SetVoicesEvent } from '../types';
 import { fromVoicesChangedEvent, getLocalVoices } from '../utils';
 
-const voicesListener: EventObservableCreator<VoicesChangedEvent> = () =>
+const voicesListener: EventObservableCreator<SetVoicesEvent> = () =>
   fromVoicesChangedEvent().pipe(
     startWith(getLocalVoices()),
-    map<SpeechSynthesisVoice[], VoicesChangedEvent>((voices) => ({
-      type: 'VOICES_CHANGED',
+    map<SpeechSynthesisVoice[], SetVoicesEvent>((voices) => ({
+      type: 'SET_VOICES',
       voices,
     }))
   );

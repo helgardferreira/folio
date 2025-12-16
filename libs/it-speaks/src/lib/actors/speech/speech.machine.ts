@@ -8,14 +8,13 @@ import {
 } from 'xstate';
 
 import { scrubMachine } from '../scrub/scrub.machine';
+import { voiceSelectorMachine } from '../voice-selector/voice-selector.machine';
 
-import { voicesListenerLogic } from './actors/voices-listener';
 import type {
+  SetVoiceEvent,
   SpeechActorContext,
   SpeechActorEvent,
-  VoicesChangedEvent,
 } from './types';
-import { findDefaultVoice } from './utils';
 
 enum ScrubKind {
   Speed = 'speed',
@@ -24,11 +23,11 @@ enum ScrubKind {
 }
 
 // TODO: refactor this
-//       - move most (if not all) `SpeechSynthesisVoice` related actions and actors to `voiceSelectorMachine`
 // TODO: implement this
 //       - without scrubbing for first implementation
 //       - figure out scrubbing event handling with guarded transitions based on `id` on event payload
 //       - should probably create bespoke `TOGGLE_VOLUME` event in `speechMachine`
+//       - implement better error handling
 // TODO: continue here...
 const speechMachine = setup({
   types: {
@@ -40,37 +39,97 @@ const speechMachine = setup({
       type: 'ENABLE',
     }),
     // TODO: implement each of these
-    /* boundary */
+    boundary: assign(({ context }) => {
+      const { wordIndex, length } = context;
+      const newWordIndex = wordIndex + 1;
+
+      return {
+        wordIndex: newWordIndex,
+        progress: newWordIndex / length,
+      };
+    }),
     cancel: (_) => speechSynthesis.cancel(),
     load: enqueueActions(({ context, enqueue }, { text }: { text: string }) => {
-      const { currentVoice, rate, volume } = context;
+      const { voice, rate, volume } = context;
 
-      if (!currentVoice) return;
+      if (!voice) return;
 
       const { length } = text.split(' ');
-      const utteranceRef = new SpeechSynthesisUtterance(
+      const utterance = new SpeechSynthesisUtterance(
         text.replace(/[^a-zA-Z\s]/g, '')
       );
-      utteranceRef.rate = rate;
-      utteranceRef.volume = volume;
-      utteranceRef.voice = currentVoice;
+      utterance.rate = rate;
+      utterance.volume = volume;
+      utterance.voice = voice;
 
       enqueue.assign({
-        currentText: text,
         length,
         progress: 0,
-        utteranceRef,
+        text,
+        utterance,
         wordIndex: 0,
       });
     }),
-    /* play */
+    logError: (_, { error }: { error: unknown }) => console.error(error),
+    // TODO: reimplement this
+    play: enqueueActions(({ context, enqueue }, { type }: { type: string }) => {
+      const { length, rate, text, utterance, voice, volume, wordIndex } =
+        context;
+
+      // TODO: remove this after debugging
+      console.log('play', { type });
+
+      if (!utterance) {
+        return enqueue.raise({
+          type: 'ERROR',
+          error: new Error('Missing utterance'),
+        });
+      }
+      if (!voice) {
+        return enqueue.raise({
+          type: 'ERROR',
+          error: new Error('Missing voice'),
+        });
+      }
+
+      // TODO: remove this after debugging
+      console.log('wolf A');
+
+      let newUtterance: SpeechSynthesisUtterance | undefined;
+
+      // TODO: completely reimplement / rework this
+      if (type !== 'LOAD') {
+        // TODO: remove this after debugging
+        console.log('wolf B');
+
+        const newTextSlice = text.split(' ').slice(wordIndex).join(' ');
+        newUtterance = new SpeechSynthesisUtterance(
+          newTextSlice.replace(/[^a-zA-Z\s]/g, '')
+        );
+        newUtterance.rate = rate;
+        newUtterance.volume = volume;
+        newUtterance.voice = voice;
+      }
+
+      // TODO: determine if this can be removed through proper finite states and transitions
+      //// ---------------------------------------------------------------------
+      speechSynthesis.cancel();
+      //// ---------------------------------------------------------------------
+      speechSynthesis.speak(newUtterance ?? utterance);
+      speechSynthesis.resume();
+
+      enqueue.assign({
+        progress: wordIndex / length,
+        utterance: newUtterance ?? utterance,
+      });
+    }),
     // TODO: completely reimplement / rework reload mechanism
     speedScrub: enqueueActions(
       ({ context, enqueue }, { value }: { value: number }) => {
-        const { utteranceRef } = context;
+        const { utterance } = context;
 
-        if (utteranceRef) {
-          utteranceRef.rate = value;
+        if (utterance) {
+          utterance.rate = value;
         }
 
         // TODO: completely reimplement / rework reload mechanism
@@ -81,20 +140,16 @@ const speechMachine = setup({
         enqueue.assign({ rate: value });
       }
     ),
-    /* voiceChanged */
-    voicesChanged: assign(
-      ({ context }, { voices }: Omit<VoicesChangedEvent, 'type'>) =>
-        context.currentVoice !== undefined
-          ? { voices }
-          : { currentVoice: findDefaultVoice(voices), voices }
-    ),
+    setVoice: assign((_, { voice }: Omit<SetVoiceEvent, 'type'>) => ({
+      voice,
+    })),
     // TODO: completely reimplement / rework reload mechanism
     volumeScrub: enqueueActions(
       ({ context, enqueue }, { value }: { value: number }) => {
-        const { utteranceRef } = context;
+        const { utterance } = context;
 
-        if (utteranceRef) {
-          utteranceRef.volume = value;
+        if (utterance) {
+          utterance.volume = value;
         }
 
         // TODO: completely reimplement / rework reload mechanism
@@ -109,85 +164,21 @@ const speechMachine = setup({
       progress: value,
       wordIndex: Math.trunc(value * context.length),
     })),
-    // TODO: implement this
-    /*
-    boundary: assign(({ wordIndex, length }) => {
-      const newWordIndex = wordIndex + 1;
-
-      return {
-        wordIndex: newWordIndex,
-        progress: newWordIndex / length,
-      };
-    }),
-    */
-    // TODO: implement this
-    /*
-    voiceChanged: assign(({ voices, currentVoice }, { id }) => ({
-      currentVoice:
-        voices.find((voice) => voice.voiceURI === id) ?? currentVoice,
-    })),
-    */
-    // TODO: implement this
-    /*
-    play: assign(
-      (
-        {
-          currentText,
-          currentVoice,
-          length,
-          rate,
-          utteranceRef,
-          volume,
-          wordIndex,
-        },
-        { type }
-      ) => {
-        // TODO: improve this error handling via `enqueueActions` with `enqueue.raise`
-        if (!utteranceRef) throw new Error('Missing utterance');
-        // TODO: improve this error handling via `enqueueActions` with `enqueue.raise`
-        if (!currentVoice) throw new Error('Missing voice');
-
-        let newUtteranceRef: SpeechSynthesisUtterance | undefined;
-        if (type !== 'LOAD') {
-          const newTextSlice = currentText
-            .split(' ')
-            .slice(wordIndex)
-            .join(' ');
-          newUtteranceRef = new SpeechSynthesisUtterance(
-            newTextSlice.replace(/[^a-zA-Z\s]/g, '')
-          );
-          newUtteranceRef.rate = rate;
-          newUtteranceRef.volume = volume;
-          newUtteranceRef.voice = currentVoice;
-        }
-
-        // TODO: determine if this can be removed through proper finite states and transitions
-        speechSynthesis.cancel();
-        speechSynthesis.speak(newUtteranceRef ?? utteranceRef);
-        speechSynthesis.resume();
-
-        return {
-          progress: wordIndex / length,
-          utteranceRef: newUtteranceRef ?? utteranceRef,
-        };
-      }
-    ),
-    */
   },
   actors: {
     // TODO: implement each of these
     /* boundary$ */
     scrub: scrubMachine,
     /* speedReload$ */
-    voicesListener: voicesListenerLogic,
     /* volumeReload$ */
+    voiceSelector: voiceSelectorMachine,
     // TODO: implement this
     /*
-    boundary$: ({ utteranceRef }): Observable<BoundaryEvent> => {
+    boundary$: ({ utterance }): Observable<BoundaryEvent> => {
       // TODO: improve this error handling via `throwError`
-      if (!utteranceRef) throw new Error('Missing utterence');
+      if (!utterance) throw new Error('Missing utterance');
 
-      return fromUtteranceEvent(utteranceRef, 'onboundary').pipe(
+      return fromUtteranceEvent(utterance, 'onboundary').pipe(
         map<SpeechSynthesisEvent, BoundaryEvent>(() => ({
           type: 'BOUNDARY',
         }))
@@ -226,18 +217,16 @@ const speechMachine = setup({
     */
   },
   guards: {
-    hasVoice: ({ context }) => context.currentVoice !== undefined,
+    hasVoice: ({ context }) => context.voice !== undefined,
     isSpeedScrub: (_, { id }: { id: string }) => id === ScrubKind.Speed,
     isVolumeScrub: (_, { id }: { id: string }) => id === ScrubKind.Volume,
     isWordScrub: (_, { id }: { id: string }) => id === ScrubKind.Word,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAGwB2ADQgAnohEAmABwA6eQGZZ1akOryArCoCc1ACwBfExNTpsOcgHkCAERr0kIZm048+ghKInSEI30hRWoVEWoREQBGHWpokRVosws0TFwAZTwAJQBVACFnPncOLl5XHxUDRRUdfX0RHXVNaKF-RGjIxVkRI16dVr1ZfSN5FJBLdJwsvMLol0YWUq8KxDVqbobR+JV5DRVjdoRo2XHJ6wA1WwBJMgyAfTwACWIAcVInOmKlz3LQSqEKmUtUMsWiKiEsiEOiO8i0ilGBx0RiEQiMdSEZzSlxuZEeLyI70+CzcPzK3jWQiUER0Qn0VXC9USsM6imhjQM0XqrShWKsWEUAEMMJwAG5gHBXW6kfFvD5FVwlX4UhA9fTdXRg2RJeTRVRHQHqhJGE0NNSqERjcwTbEC4VisCKFAAG0FklY3CgOAACgRchlSArFh5yatfJplPIekYTqJkVGjjpEsoog04oYqvJ9Hz0kKRaxxU7Xe7PTh8rZckQHARsgBNIOkkMrf6IFFGRT6VqQ5HUOqyHRwo59dsNaG7TpZxo6HQ57B5h1Ft0er3ZCj2YnfJt-AStqI1QxJ9SAyKxGFSVv9xRgjRBfRNMKma3nO35wsoQUAV1gkB95AI9a+RUyWbHdfASK86XUU89REPxzwQJp217ftOmMeREjCMxrW4JgIDgPhn03ZZtx8LkjgAWkaGpZGGLl4jhQx5EfVJ+UUVgIGdMAiOVMNZCCDUBgGbU9T1FQjjkJR6nqKMmNRZIn1tecCy4oCtxVYSBK1HVRKOfsgXQ7UswSfRdRMlRZxfBcXSXT1uNDFtAijRRaUBaco1RTRIkTYZlGodQYho6MogspTC1gDAACcPwAI2i5c7JAyptARUZkTpMJjG1cR4IMdUqVGCJohjOIghC+1lMUCAeBU4NiJVNQQhEEzBl7LRdn0I4VBjK872GXs4gSU4FNY8q30-b8IASkiZD1Goe1kk1aihRM1BqPzjHpOQjCyrCTCAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAOxCANCACeiABwBGAHQBmAEzLpATgBsAVlWz1u2QF8j41Omw5yAeQIARGvSQhmbTjz6CEI8VITL1ABZ5dXU1OWpI7UVAoRMzNExcG3tKWSdGFg4uXmcvH0lEWSFFeVlqRW1pEtUYzWpA+JBzJJwAZTwAJQBVACFHPldsjzzEHWp5bVltetnqbUDpRV8ZCvlpTWUhHTlZZUC1JpbLDp7+9MGs91zQL01FBUDo2VlFUOklgJWEDXUyxSET2Umg0QlUyiOiROpAAKgB9ABq1gAkmQBs4htdPMIGvJItJtNQ9upqNU1N9QsFAntlLJNvMpiDIRYsPIAIYYTgANzA7S6fThbRhBE6MPRmTcOWxCBUpQMWlkByJ0way0KCCm0hCWwqm0CiyemmZSXZnNYPPasMRKLRdEukpGt0QKi18s0iuUysJgTVfk0gU0kw+DWo7up8zipmaUNZHO5YHkKAANmyJKxuFAcAAFAjdNqkcUuK5S0YIPZ7eQgyqera0-Tab7adRCeSBMLSKKKMlE43YU3xxMptMZnC9azdIh2EUATULmJLTrL1CEEyExTekQCbdD3zbWqbeyEM0Cy+0Il7sbNPMHqfTmc6FFsDjtGOLjoERVJpX0r0UAJJiwNuq+patsZ77E8Z4+vMF79uaCYoGyACusCQNm5AELOL4SsMNwfmWqh-IsFRvE2AJCOojaxJWmhgm2lQAgysFxvB8iwBgABOSEAEbcXefJnHOb54V4TYtielRBHqsgfLIu6LPIFEPBU1Rdk8kYJCycHXuxXG8fxpwCqQk5CQ6IkyNMeJEsCajKFMLzKFRWq-GETZbGE2wmFG3BMBAcB8McWD2rh0pfOqAC0RpRoF8isBASZgMFWKlp6CihiSrzEWSyi+hZrYkmCBLUDWGXMVeiWvmZoVHiETZhqlKo+t85YhB2AYUcCSzNlFmkmix15xQlSULvhLq1QqSovN6uX+NQfyKCR-r6iSMTNmVA7JreGbDe+XjlB8Si0YeHk6HSjbRK2dLSJ1dkiPs62sYhKGQDt5lln+EyaDoWwzA0OgzOd2ghHSIjSLEh5VA9OmcTxfHbZVIWlv6yiTISpIGPUMmUeqCx-KGQgbCUGj+sVXlGEAA */
   id: 'speech',
 
   context: ({ self, spawn }) => ({
-    currentText: '',
-    currentVoice: undefined,
     length: 0,
     progress: 0,
     rate: 1,
@@ -251,8 +240,13 @@ const speechMachine = setup({
         parentActor: self,
       },
     }),
-    utteranceRef: undefined,
-    voices: [],
+    text: '',
+    utterance: undefined,
+    voice: undefined,
+    voiceSelectorActor: spawn('voiceSelector', {
+      id: 'voiceSelector',
+      input: { parentActor: self },
+    }),
     volume: 1,
     volumeScrubActor: spawn('scrub', {
       id: ScrubKind.Volume,
@@ -280,14 +274,15 @@ const speechMachine = setup({
 
   initial: 'idle',
 
-  invoke: {
-    id: 'voicesListener',
-    src: 'voicesListener',
-  },
-
   on: {
     CANCEL: {
       target: '.idle',
+    },
+    ERROR: {
+      actions: {
+        params: ({ event }) => ({ error: event.error }),
+        type: 'logError',
+      },
     },
     LOAD: [
       {
@@ -335,40 +330,11 @@ const speechMachine = setup({
         },
       },
     ],
-    // TODO: determine if this is still necessary thanks to reworked `scrubMachine` implementation
-    /*
-    SCRUB_START: [
-      {
-        // actions: 'speedScrub',
-        guard: {
-          params: ({ event }) => ({ id: event.id }),
-          type: 'isSpeedScrub',
-        },
-      },
-      {
-        // actions: 'volumeScrub',
-        guard: {
-          params: ({ event }) => ({ id: event.id }),
-          type: 'isVolumeScrub',
-        },
-      },
-    ],
-    */
-    VOICES_CHANGED: {
+    SET_VOICE: {
       actions: {
-        params: ({ event }) => ({ voices: event.voices }),
-        type: 'voicesChanged',
+        params: ({ event }) => ({ voice: event.voice }),
+        type: 'setVoice',
       },
-    },
-    VOICE_CHANGED: {
-      // TODO: remove this after debugging
-      //// ---------------------------------------------------------------------
-      actions: () => {
-        console.log('wolf A');
-      },
-      //// ---------------------------------------------------------------------
-      // TODO: implement this
-      // actions: 'voiceChanged',
     },
   },
 
@@ -379,29 +345,29 @@ const speechMachine = setup({
       initial: 'playing',
 
       states: {
+        // TODO: reevaluate 'active.idle' state
+        idle: {},
+
         // TODO: maybe implement `exit` action?
         playing: {
           // TODO: implement this
-          // entry: 'play',
-          // TODO: remove this after debugging
-          entry: () => {
-            console.log('.active.playing entry');
+          entry: {
+            params: ({ event }) => ({ type: event.type }),
+            type: 'play',
           },
 
           on: {
-            PAUSE: {
-              actions: 'cancel',
-              target: 'paused',
-            },
-
             BOUNDARY: {
               // TODO: implement this
               // actions: 'boundary',
             },
-
+            PAUSE: {
+              actions: 'cancel',
+              target: 'paused',
+            },
             RELOAD: {
-              target: 'playing',
               reenter: true,
+              target: 'playing',
             },
           },
 
@@ -411,7 +377,7 @@ const speechMachine = setup({
             {
               src: 'boundary$',
               onDone: {
-                target: '.idle',
+                target: 'idle',
               },
             },
             {
@@ -424,28 +390,29 @@ const speechMachine = setup({
           */
         },
 
-        scrubbing: {
-          // TODO: figure scrub actor composition out later
-          /*
-          on: {
-            'WORD/SCRUB': {
-              target: 'scrubbing',
-              actions: 'wordScrub',
-            },
-
-            'WORD/END_SCRUB': {
-              target: 'playing',
-            },
-          },
-          */
-        },
-
-        // TODO: reevaluate 'active.idle' state
-        idle: {},
-
         paused: {
           on: {
-            PLAY: {
+            PLAY: { target: 'playing' },
+          },
+        },
+
+        scrubbing: {
+          on: {
+            SCRUB: {
+              actions: {
+                params: ({ event }) => ({ value: event.value }),
+                type: 'wordScrub',
+              },
+              guard: {
+                params: ({ event }) => ({ id: event.id }),
+                type: 'isWordScrub',
+              },
+            },
+            SCRUB_END: {
+              guard: {
+                params: ({ event }) => ({ id: event.id }),
+                type: 'isWordScrub',
+              },
               target: 'playing',
             },
           },
@@ -455,12 +422,8 @@ const speechMachine = setup({
       on: {
         SCRUB_START: [
           {
-            actions: [
-              // TODO: maybe remove this in favor of `.active.playing` `exit` action?
-              'cancel',
-              // TODO: determine if this is still necessary thanks to reworked `scrubMachine` implementation
-              // 'wordScrub'
-            ],
+            // TODO: maybe remove this in favor of `.active.playing` `exit` action?
+            actions: 'cancel',
             target: '.scrubbing',
             guard: {
               params: ({ event }) => ({ id: event.id }),
@@ -468,19 +431,12 @@ const speechMachine = setup({
             },
           },
         ],
-
-        VOICE_CHANGED: {
+        SET_VOICE: {
           target: '.playing',
-          // TODO: implement this
-          // actions: 'voiceChanged',
-          // TODO: remove this after debugging
-          //// ---------------------------------------------------------------------
-          actions: () => {
-            console.log('wolf B');
+          actions: {
+            params: ({ event }) => ({ voice: event.voice }),
+            type: 'setVoice',
           },
-          //// ---------------------------------------------------------------------
-          // TODO: determine if reenter should be enabled here
-          // reenter: true,
         },
       },
     },

@@ -1,5 +1,5 @@
-import { LANGUAGE_VOICE_LOCALE_META } from '../../../../constants';
-import type { VoiceItem } from '../../types';
+import { LANGUAGE_VOICE_LOCALE_META } from '../constants';
+import type { VoiceItem } from '../types';
 
 export function getVoiceItems(voices: SpeechSynthesisVoice[]) {
   const preferredLanguageCode = navigator.language.split('-')[0];
@@ -17,7 +17,10 @@ export function getVoiceItems(voices: SpeechSynthesisVoice[]) {
     const { languageName, region, regionName } =
       LANGUAGE_VOICE_LOCALE_META[languageCode];
 
-    const flagUrl = new URL(`./flag-icons/${region}.svg`, import.meta.url).href;
+    const flagUrl = new URL(
+      `../../../components/icons/flags/${region}.svg`,
+      import.meta.url
+    ).href;
 
     return {
       flagUrl,
@@ -27,6 +30,7 @@ export function getVoiceItems(voices: SpeechSynthesisVoice[]) {
       languageName,
       regionName,
       voiceName: name,
+      voice,
     };
   });
 

@@ -4,17 +4,18 @@ import type {
   ScrubEndEmittedEvent,
   ScrubStartEmittedEvent,
 } from '../scrub/types';
+import type { VoiceSelectorActorRef } from '../voice-selector/voice-selector.machine';
 
 type SpeechActorContext = {
-  currentText: string;
-  currentVoice: SpeechSynthesisVoice | undefined;
-  // TODO: maybe replace this with `words` array?
+  // TODO: maybe replace `length` with `words` array?
   length: number;
   progress: number;
   rate: number;
   speedScrubActor: ScrubActorRef;
-  utteranceRef: SpeechSynthesisUtterance | undefined;
-  voices: SpeechSynthesisVoice[];
+  text: string;
+  utterance: SpeechSynthesisUtterance | undefined;
+  voice: SpeechSynthesisVoice | undefined;
+  voiceSelectorActor: VoiceSelectorActorRef;
   volume: number;
   volumeScrubActor: ScrubActorRef;
   wordIndex: number;
@@ -26,6 +27,10 @@ type BoundaryEvent = {
 };
 type CancelEvent = {
   type: 'CANCEL';
+};
+type ErrorEvent = {
+  type: 'ERROR';
+  error: unknown;
 };
 type LoadEvent = {
   type: 'LOAD';
@@ -40,39 +45,33 @@ type PlayEvent = {
 type ReloadEvent = {
   type: 'RELOAD';
 };
-// TODO: rename this
-type VoiceChangedEvent = {
-  type: 'VOICE_CHANGED';
-  id: string;
-};
-// TODO: rename this
-type VoicesChangedEvent = {
-  type: 'VOICES_CHANGED';
-  voices: SpeechSynthesisVoice[];
+type SetVoiceEvent = {
+  type: 'SET_VOICE';
+  voice: SpeechSynthesisVoice;
 };
 
 type SpeechActorEvent =
   | BoundaryEvent
   | CancelEvent
+  | ErrorEvent
   | LoadEvent
   | PauseEvent
   | PlayEvent
   | ReloadEvent
-  | VoiceChangedEvent
-  | VoicesChangedEvent
   | ScrubEmittedEvent
   | ScrubEndEmittedEvent
-  | ScrubStartEmittedEvent;
+  | ScrubStartEmittedEvent
+  | SetVoiceEvent;
 
 export type {
   BoundaryEvent,
   CancelEvent,
+  ErrorEvent,
   LoadEvent,
   PauseEvent,
   PlayEvent,
   ReloadEvent,
+  SetVoiceEvent,
   SpeechActorContext,
   SpeechActorEvent,
-  VoiceChangedEvent,
-  VoicesChangedEvent,
 };
