@@ -8,8 +8,9 @@ import type {
 type SpeechActorContext = {
   currentText: string;
   currentVoice: SpeechSynthesisVoice | undefined;
+  // TODO: maybe replace this with `words` array?
   length: number;
-  percentage: number;
+  progress: number;
   rate: number;
   speedScrubActor: ScrubActorRef;
   utteranceRef: SpeechSynthesisUtterance | undefined;
@@ -39,13 +40,14 @@ type PlayEvent = {
 type ReloadEvent = {
   type: 'RELOAD';
 };
+// TODO: rename this
 type VoiceChangedEvent = {
   type: 'VOICE_CHANGED';
   id: string;
 };
+// TODO: rename this
 type VoicesChangedEvent = {
   type: 'VOICES_CHANGED';
-  voice: SpeechSynthesisVoice;
   voices: SpeechSynthesisVoice[];
 };
 

@@ -1,8 +1,6 @@
 import { useSelector } from '@xstate/react';
 import { type CSSProperties, useMemo } from 'react';
 
-import { cn } from '@folio/utils';
-
 import { type ScrubActorRef } from '../../../actors';
 
 export function useScrubberHandle(scrubActor: ScrubActorRef) {
@@ -19,23 +17,7 @@ export function useScrubberHandle(scrubActor: ScrubActorRef) {
     (snapshot) => snapshot.context.scrubTrackRect
   );
 
-  const handleClassName = useMemo(
-    () =>
-      cn(
-        direction === 'bottom-top' &&
-          'left-1/2 -translate-x-1/2 translate-y-1/2',
-        direction === 'left-right' &&
-          'top-1/2 -translate-x-1/2 -translate-y-1/2',
-        direction === 'right-left' &&
-          'top-1/2 translate-x-1/2 -translate-y-1/2',
-        direction === 'top-bottom' &&
-          'left-1/2 -translate-x-1/2 -translate-y-1/2',
-        'absolute cursor-pointer rounded-full select-none'
-      ),
-    [direction]
-  );
-
-  const handleStyle = useMemo<CSSProperties>(() => {
+  const transformStyle = useMemo<CSSProperties>(() => {
     const scrubTrackOffset = scrubTrackRect?.offset ?? {
       bottom: 0,
       left: 0,
@@ -72,7 +54,7 @@ export function useScrubberHandle(scrubActor: ScrubActorRef) {
   }, [direction, percentage, scrubTrackRect?.offset]);
 
   return {
-    handleClassName,
-    handleStyle,
+    direction,
+    transformStyle,
   };
 }

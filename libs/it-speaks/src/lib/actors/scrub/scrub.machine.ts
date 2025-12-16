@@ -40,6 +40,8 @@ const scrubMachine = setup({
       return { percentage, scrubTrack, scrubTrackRect };
     }),
     detach: assign({ scrubTrack: undefined, scrubTrackRect: undefined }),
+    disable: assign({ disable: true }),
+    enable: assign({ disable: false }),
     logError: (_, { error }: { error: unknown }) => console.error(error),
     scrub: enqueueActions(
       (
@@ -143,14 +145,26 @@ const scrubMachine = setup({
   actors: {
     scrubbing: scrubbingLogic,
   },
+  guards: {
+    shouldDisable: ({ context }) => context.disable,
+    shouldEnable: ({ context }) => !context.disable,
+  },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAUQCUCB5AgbQAYBdRUABwHtYBLAF2YYDtaQAPRACwAmADQgAnoiEBOAQDoAjAooUAbMIAcAgOzaAzNIC+hsakxY5AQ1atLKABaQcAETwAVAIIBhABKUaSCCMLOxcPPwIMgCschqqalF62hpJegICYpKRanLSCqp52tJ6elFRCsLGpujYVjZ2jhByzBAANmA4AMpeBACqAEIA+p2eBG7+PMFsHNyBEfqquToaGgpCAhTaFNIamYgKURRy6lFFUUIUBhqJqlUgZrXWtg6Qcg9YWMycUDgQXGDNTgANwYAGsAe9Pt8JoEpqFZqB5npFodznptvEdAo9ghkfINBQ4gppDtVKdlFE7u86s9Gm8ah8vj8wGg0Aw0HI6K1rAAzdkAW3p5ihUBh9CY0zCc0QCzkqKE6OkmO02IkUgEMWkF1OJTyCg0QgUVIZNIar0hTK6PQGYqCEvh4UQiT0crxUQK5WJ6RxQgucgEaSEBtUyQqQm0xvMcggYFpTg8bk8vltcJmjsi0hicQSSRS+m9atxFCEijyqnRAjyNxDkce9ReEC67kGAAVCF48AA5TwAcTwKftaelCFU6jkJWuE5k0mSGUL5W0ckJFwJpxDaiExhMIE4DBj8EC70mg6liMQAFpVDjz+slyoKAoinpfdpK4TaxYnmaIMeQkOzwgGyLAYUSrK+Wrlnkc5ZOW46+hoM7xMSEERtu1Jfg2zRtGAv6SgifCINIOSqL6AgHGso5qKqWRBi6SgziSJE6Fs1wfqamEWt8uEOsOGryCBYGVkIkEVDiz5HCxJJoqoaxFGxMZxj+sInvhET5IujHbJcyQkVoYmPnewkKpWSrxBoW6GEAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwMYCcCuAjAxAEQEkBlAQQCEAZAUQG0AGAXUVAAcB7WASwBdO2A7ZiAAeiAGwBGOgDoA7LICcAJgAcEgMyKF6hWIA0IAJ6IJSgL5mDqTLioA5ctXpMkIdl14ChohJKXSFABYdIPUJQNkJFXUDYwQFBVlpdUCJNLSlAFY6MUiLK3RsHCoAJRKAeRLnIXcePkFXH0zZWJMVfwlFJUCVYIVMlVl1TPyQa2xpAENubkmUAAtIfCoAFRIAYQAJatdazwbQHzCZFTEc2Tps9vV1FUzWhE6xaUzEsTPbpXU6OiDR8awUxmc0WEBwRFWAH0AAqldb2NYAcVojBqHDqXkaiHk6hegSCzTo3z69yMiE0SXCkTCqSUChUylk-0KgOmswWSwhK0hADUSBQAKoolysdH7bzYhLSLIDW5nH4qHIPVQSaSDL79BmyMSBTISZk2IHs0E4Haijz1CUIfG43rdTRiG49WTdB69FTSKK-TKBJThX6yFQGiZskGQaScCAAGzA4PWJQFZEhRDWJRWZrcYstWPiqWkvsuvr1Xz9gQePtVskCEUyNzEqlrQcsYxZRrDEGkAKwnH4UBwEAEYAj-AAbmwANZDrs9qAZvbZw6IIIyRKBzRKbVKDcSB6OpJ0CRBFTHwOHpsFQ2hjkd6e9nBgNBoNhoaQsKPTABmz4Atp2Wd3eznLNMUXXMV3kaIXU3bcHhdBRpWUbRZAGVJHXMZsATba8-xsAC+yIeNEyAi0QJEbFbmkH4FDoY96wZZoFHLelpSyQYCToZDFGDVlgWwiBOFgSYsBjMFiIxA4yLAgIIPXaDIjdHpPUVfpfX9RJzxbQ0IDAY0lhIFY1i2MTxRzY41TOXJLhor5blJOJTkyOQiSrOshiPCxm34NhtPgVwATREiJJ8RiyQQBlpSrIZMj1WtqyibisNBALxKtatHLtYJtSddUy1C3VAnzP1TjEZRoiddQEqvUEI2jMBkpM0CMlVb0D0dekwgkfRQu1VUdTCelax9YZ9Qw1sqvDW8oHqhdJLEAZzN6XJ6xyD5d2Y7IcnCXRJDoP1Kt46r+ME4TIGm0ifCGArAh1TrdGou5BgU55fjQzrovUJQOIS7TdIgM6grafwEjOZQOLQv1lUuSjIjuT6skCH54o8oA */
   id: 'scrub',
 
   context: ({
-    input: { direction, initialValue, max = 1, min = 0, parentActor },
+    input: {
+      direction,
+      disable = false,
+      initialValue,
+      max = 1,
+      min = 0,
+      parentActor,
+    },
   }) => ({
     direction,
+    disable,
     max,
     min,
     parentActor,
@@ -163,6 +177,12 @@ const scrubMachine = setup({
   initial: 'detached',
 
   on: {
+    DISABLE: {
+      actions: 'disable',
+    },
+    ENABLE: {
+      actions: 'enable',
+    },
     ERROR: {
       target: '.detached',
       actions: {
@@ -210,6 +230,7 @@ const scrubMachine = setup({
             },
           },
         },
+
         scrubbing: {
           entry: 'scrubbingEntry',
 
@@ -250,6 +271,18 @@ const scrubMachine = setup({
             },
           },
         },
+
+        disabled: {
+          always: {
+            target: 'idle',
+            guard: 'shouldEnable',
+          },
+        },
+      },
+
+      always: {
+        guard: 'shouldDisable',
+        target: '.disabled',
       },
     },
     detached: {

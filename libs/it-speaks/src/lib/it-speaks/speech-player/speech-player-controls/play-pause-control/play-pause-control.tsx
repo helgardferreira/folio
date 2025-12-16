@@ -7,6 +7,9 @@ import { useSpeechContext } from '../../../../actors';
 export function PlayPauseControl() {
   const { speechActor } = useSpeechContext();
 
+  const isActive = useSelector(speechActor, (snapshot) =>
+    snapshot.matches('active')
+  );
   const isPlaying = useSelector(speechActor, (snapshot) =>
     snapshot.matches({ active: 'playing' })
   );
@@ -17,7 +20,11 @@ export function PlayPauseControl() {
   }, [isPlaying, speechActor]);
 
   return (
-    <button className="btn btn-square btn-primary btn-sm" onClick={handleClick}>
+    <button
+      className="btn btn-square btn-primary btn-sm"
+      disabled={!isActive}
+      onClick={handleClick}
+    >
       {isPlaying ? (
         <PauseIcon className="size-4" />
       ) : (

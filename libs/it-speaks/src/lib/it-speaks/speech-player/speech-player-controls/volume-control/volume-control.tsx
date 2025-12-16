@@ -8,8 +8,12 @@ import {
 import { useCallback } from 'react';
 
 import { useSpeechContext } from '../../../../actors';
-
-import { VolumeScrubber } from './volume-scrubber/volume-scrubber';
+import {
+  ScrubberHandle,
+  ScrubberProgress,
+  ScrubberRoot,
+  ScrubberTrack,
+} from '../../../../components';
 
 export function VolumeControl() {
   const { speechActor } = useSpeechContext();
@@ -50,7 +54,17 @@ export function VolumeControl() {
         {volumePercentage > 66 && <Volume2Icon className="size-4" />}
       </button>
 
-      <VolumeScrubber volumeScrubActor={volumeScrubActor} />
+      <ScrubberRoot
+        className="h-8 w-25"
+        label="Volume"
+        scrubActor={volumeScrubActor}
+      >
+        <ScrubberTrack className="bg-primary/30 h-2 rounded-xl">
+          <ScrubberProgress className="bg-primary" />
+        </ScrubberTrack>
+
+        <ScrubberHandle className="bg-primary size-4" />
+      </ScrubberRoot>
     </div>
   );
 }

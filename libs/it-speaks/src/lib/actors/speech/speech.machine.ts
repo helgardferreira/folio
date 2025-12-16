@@ -1,8 +1,21 @@
-import { type ActorRefFrom, type SnapshotFrom, setup } from 'xstate';
+import {
+  type ActorRefFrom,
+  type SnapshotFrom,
+  assign,
+  enqueueActions,
+  sendTo,
+  setup,
+} from 'xstate';
 
 import { scrubMachine } from '../scrub/scrub.machine';
 
-import type { SpeechActorContext, SpeechActorEvent } from './types';
+import { voicesListenerLogic } from './actors/voices-listener';
+import type {
+  SpeechActorContext,
+  SpeechActorEvent,
+  VoicesChangedEvent,
+} from './types';
+import { findDefaultVoice } from './utils';
 
 enum ScrubKind {
   Speed = 'speed',
@@ -11,6 +24,7 @@ enum ScrubKind {
 }
 
 // TODO: refactor this
+//       - move most (if not all) `SpeechSynthesisVoice` related actions and actors to `voiceSelectorMachine`
 // TODO: implement this
 //       - without scrubbing for first implementation
 //       - figure out scrubbing event handling with guarded transitions based on `id` on event payload
@@ -22,48 +36,16 @@ const speechMachine = setup({
     events: {} as SpeechActorEvent,
   },
   actions: {
-    // TODO: implement each of these
-    /*
-    boundary
-    cancel
-    load
-    play
-    speedScrub
-    voiceChanged
-    voicesChanged
-    volumeScrub
-    wordScrub
-    */
-    // TODO: implement this
-    /*
-    boundary: assign(({ wordIndex, length }) => {
-      const newWordIndex = wordIndex + 1;
-
-      return {
-        wordIndex: newWordIndex,
-        // TODO: refactor this to account for percentage in scrubber no longer being normalized
-        percentage: newWordIndex / length,
-      };
+    enableWordScrub: sendTo(({ context }) => context.wordScrubActor, {
+      type: 'ENABLE',
     }),
-    */
-    // TODO: implement this
-    /*
-    voicesChanged: assign(({ currentVoice }, { voice, voices }) => ({
-      currentVoice: currentVoice ?? voice,
-      voices,
-    })),
-    */
-    // TODO: implement this
-    /*
-    voiceChanged: assign(({ voices, currentVoice }, { id }) => ({
-      currentVoice:
-        voices.find((voice) => voice.voiceURI === id) ?? currentVoice,
-    })),
-    */
-    // TODO: implement this
-    /*
-    load: assign(({ rate, volume, currentVoice }, { text }) => {
-      if (!currentVoice) return {};
+    // TODO: implement each of these
+    /* boundary */
+    cancel: (_) => speechSynthesis.cancel(),
+    load: enqueueActions(({ context, enqueue }, { text }: { text: string }) => {
+      const { currentVoice, rate, volume } = context;
+
+      if (!currentVoice) return;
 
       const { length } = text.split(' ');
       const utteranceRef = new SpeechSynthesisUtterance(
@@ -73,15 +55,77 @@ const speechMachine = setup({
       utteranceRef.volume = volume;
       utteranceRef.voice = currentVoice;
 
-      return {
-        utteranceRef,
+      enqueue.assign({
         currentText: text,
         length,
-        // TODO: refactor this to account for percentage in scrubber no longer being normalized
-        percentage: 0,
+        progress: 0,
+        utteranceRef,
         wordIndex: 0,
+      });
+    }),
+    /* play */
+    // TODO: completely reimplement / rework reload mechanism
+    speedScrub: enqueueActions(
+      ({ context, enqueue }, { value }: { value: number }) => {
+        const { utteranceRef } = context;
+
+        if (utteranceRef) {
+          utteranceRef.rate = value;
+        }
+
+        // TODO: completely reimplement / rework reload mechanism
+        /*
+          rateSubject$.next(value);
+        */
+
+        enqueue.assign({ rate: value });
+      }
+    ),
+    /* voiceChanged */
+    voicesChanged: assign(
+      ({ context }, { voices }: Omit<VoicesChangedEvent, 'type'>) =>
+        context.currentVoice !== undefined
+          ? { voices }
+          : { currentVoice: findDefaultVoice(voices), voices }
+    ),
+    // TODO: completely reimplement / rework reload mechanism
+    volumeScrub: enqueueActions(
+      ({ context, enqueue }, { value }: { value: number }) => {
+        const { utteranceRef } = context;
+
+        if (utteranceRef) {
+          utteranceRef.volume = value;
+        }
+
+        // TODO: completely reimplement / rework reload mechanism
+        /*
+        volumeSubject$.next(value);
+        */
+
+        enqueue.assign({ volume: value });
+      }
+    ),
+    wordScrub: assign(({ context }, { value }: { value: number }) => ({
+      progress: value,
+      wordIndex: Math.trunc(value * context.length),
+    })),
+    // TODO: implement this
+    /*
+    boundary: assign(({ wordIndex, length }) => {
+      const newWordIndex = wordIndex + 1;
+
+      return {
+        wordIndex: newWordIndex,
+        progress: newWordIndex / length,
       };
     }),
+    */
+    // TODO: implement this
+    /*
+    voiceChanged: assign(({ voices, currentVoice }, { id }) => ({
+      currentVoice:
+        voices.find((voice) => voice.voiceURI === id) ?? currentVoice,
+    })),
     */
     // TODO: implement this
     /*
@@ -117,98 +161,26 @@ const speechMachine = setup({
           newUtteranceRef.voice = currentVoice;
         }
 
+        // TODO: determine if this can be removed through proper finite states and transitions
         speechSynthesis.cancel();
         speechSynthesis.speak(newUtteranceRef ?? utteranceRef);
         speechSynthesis.resume();
 
         return {
-          // TODO: refactor this to account for percentage in scrubber no longer being normalized
-          percentage: wordIndex / length,
+          progress: wordIndex / length,
           utteranceRef: newUtteranceRef ?? utteranceRef,
         };
       }
     ),
     */
-    // TODO: implement this
-    /*
-    cancel: () => speechSynthesis.cancel(),
-    */
-    // TODO: implement this
-    /*
-    // TODO: refactor this to account for percentage in scrubber no longer being normalized
-    volumeScrub: assign(({ utteranceRef }, { percentage }) => {
-      if (utteranceRef) {
-        // TODO: refactor this to account for percentage in scrubber no longer being normalized
-        utteranceRef.volume = percentage;
-      }
-
-      // TODO: refactor this to account for percentage in scrubber no longer being normalized
-      volumeSubject$.next(percentage);
-
-      return {
-        // TODO: refactor this to account for percentage in scrubber no longer being normalized
-        volume: percentage,
-      };
-    }),
-    */
-    // TODO: implement this
-    /*
-    // TODO: refactor this to account for percentage in scrubber no longer being normalized
-    speedScrub: assign(({ utteranceRef }, { percentage }) => {
-      if (utteranceRef) {
-        // TODO: refactor this to account for percentage in scrubber no longer being normalized
-        utteranceRef.rate = percentage;
-      }
-
-      // TODO: refactor this to account for percentage in scrubber no longer being normalized
-      rateSubject$.next(percentage);
-
-      return {
-        // TODO: refactor this to account for percentage in scrubber no longer being normalized
-        rate: percentage,
-      };
-    }),
-    */
-    // TODO: implement this
-    /*
-    // TODO: refactor this to account for percentage in scrubber no longer being normalized
-    wordScrub: assign(({ length }, { percentage }) => ({
-      // TODO: refactor this to account for percentage in scrubber no longer being normalized
-      percentage,
-      // TODO: refactor this to account for percentage in scrubber no longer being normalized
-      wordIndex: Math.trunc(percentage * length),
-    })),
-    */
   },
   actors: {
-    scrub: scrubMachine,
-
     // TODO: implement each of these
-    /*
-    boundary$
-    speedReload$
-    voicesChange$
-    volumeReload$
-    */
-    // TODO: implement this
-    /*
-    voicesChange$: (): Observable<VoicesChangedEvent> => {
-      return fromSpeechSynthesisEvent().pipe(
-        startWith(undefined),
-        map(() => {
-          const voices = speechSynthesis
-            .getVoices()
-            .filter((voice) => voice.localService);
-
-          return {
-            type: 'VOICES_CHANGED',
-            voice: voices.find((voice) => voice.name === 'Tessa') ?? voices[0],
-            voices,
-          } as VoicesChangedEvent;
-        })
-      );
-    },
-    */
+    /* boundary$ */
+    scrub: scrubMachine,
+    /* speedReload$ */
+    voicesListener: voicesListenerLogic,
+    /* volumeReload$ */
     // TODO: implement this
     /*
     boundary$: ({ utteranceRef }): Observable<BoundaryEvent> => {
@@ -254,16 +226,21 @@ const speechMachine = setup({
     */
   },
   guards: {
+    hasVoice: ({ context }) => context.currentVoice !== undefined,
     isSpeedScrub: (_, { id }: { id: string }) => id === ScrubKind.Speed,
     isVolumeScrub: (_, { id }: { id: string }) => id === ScrubKind.Volume,
     isWordScrub: (_, { id }: { id: string }) => id === ScrubKind.Word,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAOxCANCACewgMzSAdACZqADgUBOZWukAWbQulCAvofGp02HOQDyBACI16SEMzacefQQhHipCAKz6cgCMBhpBamoh1EYmIGaYuABqVgCSZADKAPp4ABLEAOKk9nR8LhxcvE6eOtpyQgpCygHKOkLSTdo+iEF+QsHU1PpBQtrK2tS6MaZoCTjJaaTZeUSFxY6MLOXuVYg6anJ+akIAbNrHysfRl9R+XQhB0YojQj2jagrDfsfG0+a46XgAEoAVQAQg5Sps3JVQNUlIo-OFpEEFGc2sdjncUT84jMLACQeCgutnFCKh5dtQgsFNLogsplEI-Iy1HdItQ5NIVKMXoydDocfF8UCwZQFCSytCKQguX0-ONpAFogoFPLlHdlD05NRZCcDJomszBXisHIAIYYTgANzAc1SZCWBSKEKckvJOwQQ21xzUAx6x16JwUmMkiFO8j8fiuIgiYz80mNf3NltYNrkKAANmaJKxuFAcAAFAjA9KkF0bVzu2GISPKOQYjGI64RY5BO69Ouq7TSYMTHQNIKJhLJ61gdNZnN5nCgqzAoi2AiAgCa5dJle21YQ2iCxzqA0RalOLRCYzu2iE+0VCiaQXCFy08qH2BHqbHmezufzgIoNjWkPXMICIgej7MMky3sGrbqCGvggQcDSyNoWhqFGDZPqaFqjumZoAK6wJAhbkAQK4lK6ZIbkB-jnHIKFcoeASfBM7bXnIegMtQRxjKigzGLE3BMBAcB8EKWD-lsgGeOoWJCBy7y9KMAxMpE2joXIrAQBmYBiVKHpKNS1A+n6XyBscwZ3G08gGKZYw3L6PYJrEIkvja2lVpR9LyAZvpUsZIimTBiCqp2owYu8mgccMqmYa+44fnmrkUZ43a1IqgyHFxIyKu2OjBI00jHCMHbKBMUUpmmsAYAATjhABGNWfglEmBZcig9no+UhaqrKhluEzereGLdneXylVhEA8FpZEAdKDR1sySgqlSHFfJ0PU6H4BwvMZBnbkFo0xSguH4RAjXSgVHInhMF4Xj0jTZbuBUtAV2hFSVvFAA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGIDCAggHJ4CiAMgNoAMAuoqCgPawCWALq0wHYMgAeiAGwB2ADQgAnohEAmABwA6eQGZZ1akOryArCoCc1ACwBfExNTpsOcgHkCAERr0kIZm048+ghKInSEI30hRWoVEWoREQBGHWpokRVosws0TFwAZTwAJQBVACFnPncOLl5XHxUDRRUdfX0RHXVNaKF-RGjIxVkRI16dVr1ZfSN5FJBLdJwsvMLol0YWUq8KxDVqbobR+JV5DRVjdoRo2XHJ6wA1WwBJMgyAfTwACWIAcVInOmKlz3LQSqEKmUtUMsWiKiEsiEOiO8i0ilGBx0RiEQiMdSEZzSlxuZEeLyI70+CzcPzK3jWQiUER0Qn0VXC9USsM6imhjQM0XqrShWKsWEUAEMMJwAG5gHBXW6kfFvD5FVwlX4UhA9fTdXRg2RJeTRVRHQHqhJGE0NNSqERjcwTbEC4VisCKFAAG0FklY3CgOAACgRchlSArFh5yatfJplPIekYTqJkVGjjpEsoog04oYqvJ9Hz0kKRaxxU7Xe7PTh8rZckQHARsgBNIOkkMrf6IFFGRT6VqQ5HUOqyHRwo59dsNaG7TpZxo6HQ57B5h1Ft0er3ZCj2YnfJt-AStqI1QxJ9SAyKxGFSVv9xRgjRBfRNMKma3nO35wsoQUAV1gkB95AI9a+RUyWbHdfASK86XUU89REPxzwQJp217ftOmMeREjCMxrW4JgIDgPhn03ZZtx8LkjgAWkaGpZGGLl4jhQx5EfVJ+UUVgIGdMAiOVMNZCCDUBgGbU9T1FQjjkJR6nqKMmNRZIn1tecCy4oCtxVYSBK1HVRKOfsgXQ7UswSfRdRMlRZxfBcXSXT1uNDFtAijRRaUBaco1RTRIkTYZlGodQYho6MogspTC1gDAACcPwAI2i5c7JAyptARUZkTpMJjG1cR4IMdUqVGCJohjOIghC+1lMUCAeBU4NiJVNQQhEEzBl7LRdn0I4VBjK872GXs4gSU4FNY8q30-b8IASkiZD1Goe1kk1aihRM1BqPzjHpOQjCyrCTCAA */
   id: 'speech',
 
-  // TODO: refactor this to account for percentage in scrubber no longer being normalized
   context: ({ self, spawn }) => ({
+    currentText: '',
+    currentVoice: undefined,
+    length: 0,
+    progress: 0,
+    rate: 1,
     speedScrubActor: spawn('scrub', {
       id: ScrubKind.Speed,
       input: {
@@ -274,6 +251,9 @@ const speechMachine = setup({
         parentActor: self,
       },
     }),
+    utteranceRef: undefined,
+    voices: [],
+    volume: 1,
     volumeScrubActor: spawn('scrub', {
       id: ScrubKind.Volume,
       input: {
@@ -284,116 +264,112 @@ const speechMachine = setup({
         parentActor: self,
       },
     }),
+    wordIndex: 0,
     wordScrubActor: spawn('scrub', {
       id: ScrubKind.Word,
       input: {
         direction: 'left-right',
+        disable: true,
         initialValue: 0,
         max: 1,
         min: 0,
         parentActor: self,
       },
     }),
-
-    currentText: '',
-    currentVoice: undefined,
-    length: 0,
-    percentage: 0,
-    rate: 1,
-    utteranceRef: undefined,
-    voices: [],
-    volume: 1,
-    wordIndex: 0,
   }),
 
   initial: 'idle',
 
-  // TODO: implement this
-  /*
   invoke: {
-    src: 'voicesChange$',
+    id: 'voicesListener',
+    src: 'voicesListener',
   },
-  */
 
   on: {
-    CANCEL: '.idle',
-
-    LOAD: {
-      target: '.active.playing',
-      // TODO: implement this
-      // actions: 'load',
-      reenter: true,
+    CANCEL: {
+      target: '.idle',
     },
-
-    VOICES_CHANGED: {
-      // TODO: implement this
-      // actions: 'voicesChanged',
-    },
-
-    VOICE_CHANGED: {
-      // TODO: implement this
-      // actions: 'voiceChanged',
-    },
-
-    // TODO: remove this after debugging
-    ////// ---------------------------------------------------------------------
-    /*
+    LOAD: [
+      {
+        actions: [
+          'enableWordScrub',
+          {
+            params: ({ event }) => ({ text: event.text }),
+            type: 'load',
+          },
+        ],
+        guard: 'hasVoice',
+        reenter: true,
+        target: '.active.playing',
+      },
+      {
+        actions: [
+          'enableWordScrub',
+          {
+            params: ({ event }) => ({ text: event.text }),
+            type: 'load',
+          },
+        ],
+        target: '.active.idle',
+      },
+    ],
     SCRUB: [
       {
-        actions: () => console.log('speed scrub event'),
+        actions: {
+          params: ({ event }) => ({ value: event.value }),
+          type: 'speedScrub',
+        },
         guard: {
           params: ({ event }) => ({ id: event.id }),
           type: 'isSpeedScrub',
         },
       },
       {
-        actions: () => console.log('volume scrub event'),
+        actions: {
+          params: ({ event }) => ({ value: event.value }),
+          type: 'volumeScrub',
+        },
         guard: {
           params: ({ event }) => ({ id: event.id }),
           type: 'isVolumeScrub',
         },
       },
+    ],
+    // TODO: determine if this is still necessary thanks to reworked `scrubMachine` implementation
+    /*
+    SCRUB_START: [
       {
-        actions: () => console.log('word scrub event'),
+        // actions: 'speedScrub',
         guard: {
           params: ({ event }) => ({ id: event.id }),
-          type: 'isWordScrub',
+          type: 'isSpeedScrub',
+        },
+      },
+      {
+        // actions: 'volumeScrub',
+        guard: {
+          params: ({ event }) => ({ id: event.id }),
+          type: 'isVolumeScrub',
         },
       },
     ],
-
-    SCRUB: {
-      actions: ({ event }) => {
-        console.log('SCRUB', event);
-      },
-    },
-    SCRUB_END: {
-      actions: ({ event }) => {
-        console.log('SCRUB_END', event);
-      },
-    },
-    SCRUB_START: {
-      actions: ({ event }) => {
-        console.log('SCRUB_START', event);
-      },
-    },
     */
-
-    /*
-    'SPEED/SCRUB': {
-      actions: 'speedScrub',
+    VOICES_CHANGED: {
+      actions: {
+        params: ({ event }) => ({ voices: event.voices }),
+        type: 'voicesChanged',
+      },
     },
-    'SPEED/START_SCRUB': {
-      actions: 'speedScrub',
+    VOICE_CHANGED: {
+      // TODO: remove this after debugging
+      //// ---------------------------------------------------------------------
+      actions: () => {
+        console.log('wolf A');
+      },
+      //// ---------------------------------------------------------------------
+      // TODO: implement this
+      // actions: 'voiceChanged',
     },
-    'VOLUME/SCRUB': {
-      actions: ['volumeScrub'],
-    },
-    'VOLUME/START_SCRUB': {
-      actions: ['volumeScrub'],
-    },
-    */
-    ////// ---------------------------------------------------------------------
   },
 
   states: {
@@ -403,20 +379,24 @@ const speechMachine = setup({
       initial: 'playing',
 
       states: {
+        // TODO: maybe implement `exit` action?
         playing: {
+          // TODO: implement this
           // entry: 'play',
+          // TODO: remove this after debugging
+          entry: () => {
+            console.log('.active.playing entry');
+          },
 
           on: {
             PAUSE: {
+              actions: 'cancel',
               target: 'paused',
-              // TODO: implement this
-              // actions: 'cancel',
             },
 
             BOUNDARY: {
               // TODO: implement this
               // actions: 'boundary',
-              target: 'playing',
             },
 
             RELOAD: {
@@ -430,7 +410,9 @@ const speechMachine = setup({
           invoke: [
             {
               src: 'boundary$',
-              onDone: 'done',
+              onDone: {
+                target: '.idle',
+              },
             },
             {
               src: 'volumeReload$',
@@ -458,29 +440,47 @@ const speechMachine = setup({
           */
         },
 
-        // TODO: reevaluate 'done' state
-        done: {},
+        // TODO: reevaluate 'active.idle' state
+        idle: {},
 
         paused: {
           on: {
-            PLAY: 'playing',
+            PLAY: {
+              target: 'playing',
+            },
           },
         },
       },
 
       on: {
-        // TODO: figure scrub actor composition out later
-        /*
-        'WORD/START_SCRUB': {
-          actions: ['cancel', 'wordScrub'],
-          target: '.scrubbing',
-        },
-        */
+        SCRUB_START: [
+          {
+            actions: [
+              // TODO: maybe remove this in favor of `.active.playing` `exit` action?
+              'cancel',
+              // TODO: determine if this is still necessary thanks to reworked `scrubMachine` implementation
+              // 'wordScrub'
+            ],
+            target: '.scrubbing',
+            guard: {
+              params: ({ event }) => ({ id: event.id }),
+              type: 'isWordScrub',
+            },
+          },
+        ],
 
         VOICE_CHANGED: {
           target: '.playing',
           // TODO: implement this
-          // actions: ['voiceChanged'],
+          // actions: 'voiceChanged',
+          // TODO: remove this after debugging
+          //// ---------------------------------------------------------------------
+          actions: () => {
+            console.log('wolf B');
+          },
+          //// ---------------------------------------------------------------------
+          // TODO: determine if reenter should be enabled here
+          // reenter: true,
         },
       },
     },

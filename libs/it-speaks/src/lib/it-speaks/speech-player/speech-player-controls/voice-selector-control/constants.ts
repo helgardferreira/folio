@@ -1,0 +1,48 @@
+type VoiceLocaleMeta = {
+  languageName: string;
+  region: string;
+  regionName: string;
+};
+
+export const LANGUAGE_VOICE_LOCALE_META: Record<string, VoiceLocaleMeta> = {
+  ar: { region: 'sa', languageName: 'Arabic', regionName: 'Saudi Arabia' },
+  bg: { region: 'bg', languageName: 'Bulgarian', regionName: 'Bulgaria' },
+  bn: { region: 'bd', languageName: 'Bengali', regionName: 'Bangladesh' },
+  ca: { region: 'es', languageName: 'Catalan', regionName: 'Spain' },
+  cs: { region: 'cz', languageName: 'Czech', regionName: 'Czechia' },
+  da: { region: 'dk', languageName: 'Danish', regionName: 'Denmark' },
+  de: { region: 'de', languageName: 'German', regionName: 'Germany' },
+  el: { region: 'gr', languageName: 'Greek', regionName: 'Greece' },
+  en: { region: 'us', languageName: 'English', regionName: 'United States' },
+  es: { region: 'es', languageName: 'Spanish', regionName: 'Spain' },
+  fi: { region: 'fi', languageName: 'Finnish', regionName: 'Finland' },
+  fr: { region: 'fr', languageName: 'French', regionName: 'France' },
+  he: { region: 'il', languageName: 'Hebrew', regionName: 'Israel' },
+  hi: { region: 'in', languageName: 'Hindi', regionName: 'India' },
+  hr: { region: 'hr', languageName: 'Croatian', regionName: 'Croatia' },
+  hu: { region: 'hu', languageName: 'Hungarian', regionName: 'Hungary' },
+  id: { region: 'id', languageName: 'Indonesian', regionName: 'Indonesia' },
+  it: { region: 'it', languageName: 'Italian', regionName: 'Italy' },
+  ja: { region: 'jp', languageName: 'Japanese', regionName: 'Japan' },
+  kn: { region: 'in', languageName: 'Kannada', regionName: 'India' },
+  ko: { region: 'kr', languageName: 'Korean', regionName: 'South Korea' },
+  ms: { region: 'my', languageName: 'Malay', regionName: 'Malaysia' },
+  nb: { region: 'no', languageName: 'Norwegian Bokmål', regionName: 'Norway' },
+  nl: { region: 'nl', languageName: 'Dutch', regionName: 'Netherlands' },
+  no: { region: 'no', languageName: 'Norwegian', regionName: 'Norway' },
+  pl: { region: 'pl', languageName: 'Polish', regionName: 'Poland' },
+  pt: { region: 'br', languageName: 'Portuguese', regionName: 'Brazil' },
+  ro: { region: 'ro', languageName: 'Romanian', regionName: 'Romania' },
+  ru: { region: 'ru', languageName: 'Russian', regionName: 'Russia' },
+  sk: { region: 'sk', languageName: 'Slovak', regionName: 'Slovakia' },
+  sl: { region: 'si', languageName: 'Slovenian', regionName: 'Slovenia' },
+  sv: { region: 'se', languageName: 'Swedish', regionName: 'Sweden' },
+  ta: { region: 'in', languageName: 'Tamil', regionName: 'India' },
+  te: { region: 'in', languageName: 'Telugu', regionName: 'India' },
+  th: { region: 'th', languageName: 'Thai', regionName: 'Thailand' },
+  tr: { region: 'tr', languageName: 'Turkish', regionName: 'Turkey' },
+  uk: { region: 'ua', languageName: 'Ukrainian', regionName: 'Ukraine' },
+  vi: { region: 'vn', languageName: 'Vietnamese', regionName: 'Vietnam' },
+  yue: { region: 'hk', languageName: 'Cantonese', regionName: 'Hong Kong' },
+  zh: { region: 'cn', languageName: 'Chinese', regionName: 'China' },
+};

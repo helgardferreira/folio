@@ -23,9 +23,13 @@ export function useScrubberPanel(
   const max = useSelector(scrubActor, (snapshot) => snapshot.context.max);
   const min = useSelector(scrubActor, (snapshot) => snapshot.context.min);
   const value = useSelector(scrubActor, (snapshot) => snapshot.context.value);
+  const disabled = useSelector(
+    scrubActor,
+    (snapshot) =>
+      snapshot.matches('detached') || snapshot.matches({ attached: 'disabled' })
+  );
 
-  const panelClassName =
-    'focus-visible:outline-primary relative z-10 cursor-pointer touch-none overflow-visible focus-visible:outline-2';
+  const tabIndex = disabled ? -1 : 0;
 
   const handleScrubStart = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
@@ -40,10 +44,11 @@ export function useScrubberPanel(
   );
 
   return {
+    disabled,
     handleScrubStart,
     max,
     min,
-    panelClassName,
+    tabIndex,
     value,
   };
 }

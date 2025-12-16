@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@folio/utils';
 
-import { useScrubContext } from '../../../actors';
+import { useScrubberContext } from '../use-scrubber-context';
 
 import { useScrubberPanel } from './use-scrubber-panel';
 
@@ -22,20 +22,24 @@ export function ScrubberPanel({
   onPointerDown,
   ...props
 }: ScrubberPanelProps) {
-  const { scrubActor } = useScrubContext();
-  const { handleScrubStart, max, min, panelClassName, value } =
+  const { scrubActor } = useScrubberContext();
+  const { disabled, handleScrubStart, max, min, tabIndex, value } =
     useScrubberPanel(scrubActor, onPointerDown);
 
   return (
     <div
+      aria-disabled={disabled}
       aria-label={label}
       aria-valuemax={max}
       aria-valuemin={min}
       aria-valuenow={value}
-      className={cn(panelClassName, className)}
+      className={cn(
+        'group focus-visible:outline-primary relative z-1 cursor-pointer touch-none overflow-visible focus-visible:outline-2 aria-disabled:cursor-default',
+        className
+      )}
       onPointerDown={handleScrubStart}
       role="slider"
-      tabIndex={0}
+      tabIndex={tabIndex}
       {...props}
     />
   );

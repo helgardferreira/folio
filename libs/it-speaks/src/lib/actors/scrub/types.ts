@@ -19,12 +19,39 @@ type ScrubTrackRect = {
   width: number;
 };
 
+type ScrubActorContext = {
+  direction: ScrubDirection;
+  disable: boolean;
+  max: number;
+  min: number;
+  parentActor: ParentActor | undefined;
+  percentage: number;
+  scrubTrack: Element | undefined;
+  scrubTrackRect: ScrubTrackRect | undefined;
+  value: number;
+};
+
+type ScrubActorInput = {
+  direction: ScrubDirection;
+  disable?: boolean;
+  initialValue?: number;
+  max?: number;
+  min?: number;
+  parentActor?: ParentActor;
+};
+
 type AttachEvent = {
   type: 'ATTACH';
   scrubTrack: Element;
 };
 type DetachEvent = {
   type: 'DETACH';
+};
+type DisableEvent = {
+  type: 'DISABLE';
+};
+type EnableEvent = {
+  type: 'ENABLE';
 };
 type ErrorEvent = {
   type: 'ERROR';
@@ -55,6 +82,8 @@ type SetValueEvent = {
 type ScrubActorEvent =
   | AttachEvent
   | DetachEvent
+  | DisableEvent
+  | EnableEvent
   | ErrorEvent
   | ScrubEvent
   | ScrubStartEvent
@@ -75,28 +104,11 @@ type ParentActor = ActorRef<
   ScrubEmittedEvent | ScrubEndEmittedEvent | ScrubStartEmittedEvent
 >;
 
-type ScrubActorContext = {
-  direction: ScrubDirection;
-  max: number;
-  min: number;
-  parentActor: ParentActor | undefined;
-  percentage: number;
-  scrubTrack: Element | undefined;
-  scrubTrackRect: ScrubTrackRect | undefined;
-  value: number;
-};
-
-type ScrubActorInput = {
-  direction: ScrubDirection;
-  initialValue?: number;
-  max?: number;
-  min?: number;
-  parentActor?: ParentActor;
-};
-
 export type {
   AttachEvent,
   DetachEvent,
+  DisableEvent,
+  EnableEvent,
   ErrorEvent,
   ScrubActorContext,
   ScrubActorEmittedEvent,

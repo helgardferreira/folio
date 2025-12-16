@@ -1,7 +1,5 @@
 import { useSelector } from '@xstate/react';
-import { type Ref, useCallback, useMemo } from 'react';
-
-import { cn } from '@folio/utils';
+import { type Ref, useCallback } from 'react';
 
 import type { ScrubActorRef } from '../../../actors';
 
@@ -12,18 +10,6 @@ export function useScrubberTrack(
   const direction = useSelector(
     scrubActor,
     (snapshot) => snapshot.context.direction
-  );
-
-  const trackClassName = useMemo(
-    () =>
-      cn(
-        (direction === 'bottom-top' || direction === 'top-bottom') &&
-          'bottom-0 left-1/2 h-full -translate-x-1/2',
-        (direction === 'left-right' || direction === 'right-left') &&
-          'top-1/2 left-0 w-full -translate-y-1/2',
-        'absolute cursor-pointer overflow-hidden'
-      ),
-    [direction]
   );
 
   const setRef = useCallback(
@@ -40,7 +26,7 @@ export function useScrubberTrack(
   );
 
   return {
+    direction,
     setRef,
-    trackClassName,
   };
 }

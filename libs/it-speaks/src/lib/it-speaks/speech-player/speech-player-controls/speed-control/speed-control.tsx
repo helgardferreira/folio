@@ -2,9 +2,14 @@ import { useSelector } from '@xstate/react';
 import { CircleGaugeIcon } from 'lucide-react';
 
 import { useSpeechContext } from '../../../../actors';
+import {
+  ScrubberHandle,
+  ScrubberProgress,
+  ScrubberRoot,
+  ScrubberTrack,
+} from '../../../../components';
 
 import { SpeedMultiplierButton } from './speed-multiplier-button/speed-multiplier-button';
-import { SpeedScrubber } from './speed-scrubber/speed-scrubber';
 
 const SPEED_MULTIPLIERS: number[] = [2, 1.75, 1.5, 1.25, 1, 0.75, 0.5, 0.25];
 
@@ -28,11 +33,22 @@ export function SpeedControl() {
         <CircleGaugeIcon className="size-4" />
       </summary>
 
-      <div className="bg-primary-content dropdown-content rounded-box -end-15.5 z-1 mb-12 grid h-80 w-39 grid-cols-2 grid-rows-[auto_1fr_auto] gap-y-3 px-6 py-4 shadow-sm select-none">
+      {/* <div className="dropdown-content rounded-box -end-15.5 z-1 mb-12 grid h-80 w-39 grid-cols-2 grid-rows-[auto_1fr_auto] gap-y-3 bg-slate-100 px-6 py-4 shadow-sm select-none dark:bg-slate-950"> */}
+      <div className="text-base-content dropdown-content rounded-box -end-15.5 z-1 mb-12 grid h-80 w-39 grid-cols-2 grid-rows-[auto_1fr_auto] gap-y-3 bg-slate-100 px-6 py-4 shadow-sm select-none dark:bg-slate-950">
         <span className="col-span-2 text-sm font-semibold">Playback Speed</span>
 
         <div className="size-full py-3">
-          <SpeedScrubber speedScrubActor={speedScrubActor} />
+          <ScrubberRoot
+            className="size-full"
+            label="Playback Speed"
+            scrubActor={speedScrubActor}
+          >
+            <ScrubberTrack className="bg-primary/30 w-2 rounded-xl">
+              <ScrubberProgress className="bg-primary" />
+            </ScrubberTrack>
+
+            <ScrubberHandle className="bg-primary size-4" />
+          </ScrubberRoot>
         </div>
 
         <div className="flex flex-col items-end justify-between font-mono">

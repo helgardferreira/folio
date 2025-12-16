@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@folio/utils';
 
-import { useScrubContext } from '../../../actors';
+import { useScrubberContext } from '../use-scrubber-context';
 
 import { useScrubberProgress } from './use-scrubber-progress';
 
@@ -13,13 +13,24 @@ export function ScrubberProgress({
   style,
   ...props
 }: ScrubberProgressProps) {
-  const { scrubActor } = useScrubContext();
-  const { progressClassName, progressStyle } = useScrubberProgress(scrubActor);
+  const { scrubActor } = useScrubberContext();
+  const { direction, transformStyle } = useScrubberProgress(scrubActor);
 
   return (
     <div
-      className={cn(progressClassName, className)}
-      style={{ ...progressStyle, ...style }}
+      className={cn(
+        (direction === 'bottom-top' || direction === 'top-bottom') &&
+          'left-1/2 w-full -translate-x-1/2',
+        (direction === 'left-right' || direction === 'right-left') &&
+          'top-1/2 h-full -translate-y-1/2',
+        direction === 'bottom-top' && 'bottom-0',
+        direction === 'left-right' && 'left-0',
+        direction === 'right-left' && 'right-0',
+        direction === 'top-bottom' && 'top-0',
+        'group-aria-disabled:bg-base-content/10 absolute',
+        className
+      )}
+      style={{ ...transformStyle, ...style }}
       {...props}
     />
   );
