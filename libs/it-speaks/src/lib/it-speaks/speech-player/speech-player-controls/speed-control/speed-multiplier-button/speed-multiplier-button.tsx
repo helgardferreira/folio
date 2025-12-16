@@ -23,7 +23,12 @@ export function SpeedMultiplierButton({
   const isActive = currentMultiplier === formattedMultiplier;
 
   const handleClick = useCallback(
-    () => speedScrubActor.send({ type: 'SET_VALUE', value: multiplier }),
+    () =>
+      speedScrubActor.send({
+        type: 'SET_VALUE',
+        propagate: true,
+        value: multiplier,
+      }),
     [multiplier, speedScrubActor]
   );
 

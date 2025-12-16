@@ -16,37 +16,34 @@ import {
 } from '../../../../components';
 
 export function VolumeControl() {
-  const { volumeScrubActor } = useSpeechContext();
+  const { speechActor, volumeScrubActor } = useSpeechContext();
+
+  const muted = useSelector(speechActor, (snapshot) => snapshot.context.muted);
 
   const volumePercentage = useSelector(
     volumeScrubActor,
     (snapshot) => snapshot.context.percentage
   );
 
-  // TODO: enhance mute / unmute to restore previous volume amount instead of maxing out
-  //       - should probably create bespoke `TOGGLE_VOLUME` event in `speechMachine`
-  const muteUnmute = useCallback(() => {
-    if (volumePercentage !== 0) {
-      volumeScrubActor.send({ type: 'SET_PERCENTAGE', percentage: 0 });
-    } else {
-      volumeScrubActor.send({ type: 'SET_PERCENTAGE', percentage: 100 });
-    }
-  }, [volumePercentage, volumeScrubActor]);
+  const handleClick = useCallback(
+    () => speechActor.send({ type: 'TOGGLE_MUTE' }),
+    [speechActor]
+  );
 
   return (
     <div className="flex gap-3">
       <button
         className="btn btn-square btn-primary btn-sm"
-        onClick={muteUnmute}
+        onClick={handleClick}
       >
-        {volumePercentage === 0 && <VolumeXIcon className="size-4" />}
-        {volumePercentage > 0 && volumePercentage <= 33 && (
+        {muted && <VolumeXIcon className="size-4" />}
+        {!muted && volumePercentage >= 0 && volumePercentage < 33 && (
           <VolumeIcon className="size-4" />
         )}
-        {volumePercentage > 33 && volumePercentage <= 66 && (
+        {!muted && volumePercentage >= 33 && volumePercentage < 66 && (
           <Volume1Icon className="size-4" />
         )}
-        {volumePercentage > 66 && <Volume2Icon className="size-4" />}
+        {!muted && volumePercentage >= 66 && <Volume2Icon className="size-4" />}
       </button>
 
       <ScrubberRoot

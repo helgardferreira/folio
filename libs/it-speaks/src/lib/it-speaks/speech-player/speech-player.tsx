@@ -1,6 +1,3 @@
-import { useSelector } from '@xstate/react';
-import { useEffect } from 'react';
-
 import { useSpeechContext } from '../../actors';
 import {
   ScrubberHandle,
@@ -12,18 +9,7 @@ import {
 import { SpeechPlayerControls } from './speech-player-controls/speech-player-controls';
 
 export function SpeechPlayer() {
-  const { speechActor, wordScrubActor } = useSpeechContext();
-
-  // TODO: remove this after debugging
-  // ---------------------------------------------------------------------------
-  const value = useSelector(speechActor, (snapshot) =>
-    JSON.stringify(snapshot.value)
-  );
-
-  useEffect(() => {
-    console.log({ value });
-  }, [value]);
-  // ---------------------------------------------------------------------------
+  const { wordScrubActor } = useSpeechContext();
 
   return (
     <div className="absolute bottom-10 left-1/2 flex w-4/5 -translate-x-1/2 flex-col gap-1 rounded-md bg-slate-100 px-6 py-3 dark:bg-slate-950">

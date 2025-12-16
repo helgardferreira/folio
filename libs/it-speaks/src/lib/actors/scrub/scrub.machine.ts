@@ -50,7 +50,9 @@ const scrubMachine = setup({
       ) => {
         enqueue.assign({ percentage, value });
         enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+
         if (context.parentActor === undefined) return;
+
         enqueue.sendTo(context.parentActor, {
           type: 'SCRUB',
           id: self.id,
@@ -60,9 +62,18 @@ const scrubMachine = setup({
       }
     ),
     scrubEnd: enqueueActions(({ context, enqueue, self }) => {
-      enqueue.emit({ type: 'SCRUB_END', id: self.id });
+      const { percentage, value } = context;
+
+      enqueue.emit({ type: 'SCRUB_END', id: self.id, percentage, value });
+
       if (context.parentActor === undefined) return;
-      enqueue.sendTo(context.parentActor, { type: 'SCRUB_END', id: self.id });
+
+      enqueue.sendTo(context.parentActor, {
+        type: 'SCRUB_END',
+        id: self.id,
+        percentage,
+        value,
+      });
     }),
     scrubStart: enqueueActions(
       (
@@ -70,7 +81,9 @@ const scrubMachine = setup({
         { clientX, clientY }: Omit<ScrubStartEvent, 'type'>
       ) => {
         enqueue.emit({ type: 'SCRUB_START', clientX, clientY, id: self.id });
+
         if (context.parentActor === undefined) return;
+
         enqueue.sendTo(context.parentActor, {
           type: 'SCRUB_START',
           clientX,
@@ -115,10 +128,22 @@ const scrubMachine = setup({
         const value = lerp(percentage / 100, context.min, context.max);
 
         enqueue.assign({ percentage, value });
+
+        if (params.propagate !== true) return;
+
         enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+        enqueue.emit({ type: 'SCRUB_END', id: self.id, percentage, value });
+
         if (context.parentActor === undefined) return;
+
         enqueue.sendTo(context.parentActor, {
           type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB_END',
           id: self.id,
           percentage,
           value,
@@ -131,10 +156,22 @@ const scrubMachine = setup({
         const percentage = normalize(value, context.min, context.max) * 100;
 
         enqueue.assign({ percentage, value });
+
+        if (params.propagate !== true) return;
+
         enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+        enqueue.emit({ type: 'SCRUB_END', id: self.id, percentage, value });
+
         if (context.parentActor === undefined) return;
+
         enqueue.sendTo(context.parentActor, {
           type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB_END',
           id: self.id,
           percentage,
           value,
@@ -203,13 +240,19 @@ const scrubMachine = setup({
         },
         SET_PERCENTAGE: {
           actions: {
-            params: ({ event }) => ({ percentage: event.percentage }),
+            params: ({ event }) => ({
+              percentage: event.percentage,
+              propagate: event.propagate,
+            }),
             type: 'setPercentage',
           },
         },
         SET_VALUE: {
           actions: {
-            params: ({ event }) => ({ value: event.value }),
+            params: ({ event }) => ({
+              propagate: event.propagate,
+              value: event.value,
+            }),
             type: 'setValue',
           },
         },

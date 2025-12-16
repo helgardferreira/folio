@@ -7,8 +7,7 @@ import type {
 import type { VoiceSelectorActorRef } from '../voice-selector/voice-selector.machine';
 
 type SpeechActorContext = {
-  // TODO: maybe replace `length` with `words` array?
-  length: number;
+  muted: boolean;
   progress: number;
   rate: number;
   speedScrubActor: ScrubActorRef;
@@ -20,17 +19,11 @@ type SpeechActorContext = {
   volumeScrubActor: ScrubActorRef;
   wordIndex: number;
   wordScrubActor: ScrubActorRef;
+  words: string[];
 };
 
 type BoundaryEvent = {
   type: 'BOUNDARY';
-};
-type CancelEvent = {
-  type: 'CANCEL';
-};
-type ErrorEvent = {
-  type: 'ERROR';
-  error: unknown;
 };
 type LoadEvent = {
   type: 'LOAD';
@@ -49,11 +42,16 @@ type SetVoiceEvent = {
   type: 'SET_VOICE';
   voice: SpeechSynthesisVoice;
 };
+type SpeechErrorEvent = {
+  type: 'ERROR';
+  error: unknown;
+};
+type ToggleMuteEvent = {
+  type: 'TOGGLE_MUTE';
+};
 
 type SpeechActorEvent =
   | BoundaryEvent
-  | CancelEvent
-  | ErrorEvent
   | LoadEvent
   | PauseEvent
   | PlayEvent
@@ -61,12 +59,12 @@ type SpeechActorEvent =
   | ScrubEmittedEvent
   | ScrubEndEmittedEvent
   | ScrubStartEmittedEvent
-  | SetVoiceEvent;
+  | SetVoiceEvent
+  | SpeechErrorEvent
+  | ToggleMuteEvent;
 
 export type {
   BoundaryEvent,
-  CancelEvent,
-  ErrorEvent,
   LoadEvent,
   PauseEvent,
   PlayEvent,
@@ -74,4 +72,6 @@ export type {
   SetVoiceEvent,
   SpeechActorContext,
   SpeechActorEvent,
+  SpeechErrorEvent,
+  ToggleMuteEvent,
 };

@@ -53,12 +53,14 @@ type DisableEvent = {
 type EnableEvent = {
   type: 'ENABLE';
 };
-type ErrorEvent = {
+type ScrubErrorEvent = {
   type: 'ERROR';
   error: unknown;
 };
 type ScrubEndEvent = {
   type: 'SCRUB_END';
+  percentage: number;
+  value: number;
 };
 type ScrubEvent = {
   type: 'SCRUB';
@@ -73,9 +75,11 @@ type ScrubStartEvent = {
 type SetPercentageEvent = {
   type: 'SET_PERCENTAGE';
   percentage: number;
+  propagate?: boolean;
 };
 type SetValueEvent = {
   type: 'SET_VALUE';
+  propagate?: boolean;
   value: number;
 };
 
@@ -84,7 +88,7 @@ type ScrubActorEvent =
   | DetachEvent
   | DisableEvent
   | EnableEvent
-  | ErrorEvent
+  | ScrubErrorEvent
   | ScrubEvent
   | ScrubStartEvent
   | SetPercentageEvent
@@ -109,7 +113,7 @@ export type {
   DetachEvent,
   DisableEvent,
   EnableEvent,
-  ErrorEvent,
+  ScrubErrorEvent,
   ScrubActorContext,
   ScrubActorEmittedEvent,
   ScrubActorEvent,
