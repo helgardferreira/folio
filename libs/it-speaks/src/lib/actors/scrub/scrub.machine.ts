@@ -22,7 +22,6 @@ import type {
 } from './types';
 import { getScrubTrackRect, scrubEventFrom } from './utils';
 
-// TODO: implement keyboard interactions after implementing speech machine
 const scrubMachine = setup({
   types: {
     context: {} as ScrubActorContext,
@@ -55,6 +54,69 @@ const scrubMachine = setup({
 
         enqueue.sendTo(context.parentActor, {
           type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
+      }
+    ),
+    scrubDirection: enqueueActions(
+      (
+        { context, enqueue, self },
+        params: { direction: 'down' | 'left' | 'right' | 'up' }
+      ) => {
+        const step = (context.max - context.min) / 10;
+
+        let value: number;
+
+        if (params.direction === 'left' || params.direction === 'right') {
+          if (
+            context.direction === 'bottom-top' ||
+            context.direction === 'top-bottom'
+          ) {
+            return;
+          }
+
+          if (params.direction === 'left') {
+            value = clamp(context.value - step, context.min, context.max);
+          } else {
+            value = clamp(context.value + step, context.min, context.max);
+          }
+
+          if (context.direction === 'right-left') value = value * -1;
+        } else {
+          if (
+            context.direction === 'left-right' ||
+            context.direction === 'right-left'
+          ) {
+            return;
+          }
+
+          if (params.direction === 'down') {
+            value = clamp(context.value - step, context.min, context.max);
+          } else {
+            value = clamp(context.value + step, context.min, context.max);
+          }
+
+          if (context.direction === 'top-bottom') value = value * -1;
+        }
+
+        const percentage = normalize(value, context.min, context.max) * 100;
+
+        enqueue.assign({ percentage, value });
+        enqueue.emit({ type: 'SCRUB', id: self.id, percentage, value });
+        enqueue.emit({ type: 'SCRUB_END', id: self.id, percentage, value });
+
+        if (context.parentActor === undefined) return;
+
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB',
+          id: self.id,
+          percentage,
+          value,
+        });
+        enqueue.sendTo(context.parentActor, {
+          type: 'SCRUB_END',
           id: self.id,
           percentage,
           value,
@@ -237,6 +299,30 @@ const scrubMachine = setup({
         DETACH: {
           actions: 'detach',
           target: 'detached',
+        },
+        SCRUB_DOWN: {
+          actions: {
+            params: { direction: 'down' },
+            type: 'scrubDirection',
+          },
+        },
+        SCRUB_LEFT: {
+          actions: {
+            params: { direction: 'left' },
+            type: 'scrubDirection',
+          },
+        },
+        SCRUB_RIGHT: {
+          actions: {
+            params: { direction: 'right' },
+            type: 'scrubDirection',
+          },
+        },
+        SCRUB_UP: {
+          actions: {
+            params: { direction: 'up' },
+            type: 'scrubDirection',
+          },
         },
         SET_PERCENTAGE: {
           actions: {

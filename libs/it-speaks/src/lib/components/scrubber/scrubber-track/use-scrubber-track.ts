@@ -1,12 +1,11 @@
 import { useSelector } from '@xstate/react';
 import { type Ref, useCallback } from 'react';
 
-import type { ScrubActorRef } from '../../../actors';
+import { useScrubberContext } from '../use-scrubber-context';
 
-export function useScrubberTrack(
-  scrubActor: ScrubActorRef,
-  ref?: Ref<HTMLDivElement>
-) {
+export function useScrubberTrack(ref: Ref<HTMLDivElement> | undefined) {
+  const { scrubActor } = useScrubberContext();
+
   const direction = useSelector(
     scrubActor,
     (snapshot) => snapshot.context.direction

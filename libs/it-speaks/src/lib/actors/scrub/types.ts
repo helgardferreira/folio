@@ -1,6 +1,6 @@
 import type { ActorRef, Snapshot } from 'xstate';
 
-type ScrubDirection = 'bottom-top' | 'left-right' | 'right-left' | 'top-bottom';
+type Direction = 'bottom-top' | 'left-right' | 'right-left' | 'top-bottom';
 
 type ScrubTrackOffset = {
   bottom: number;
@@ -20,7 +20,7 @@ type ScrubTrackRect = {
 };
 
 type ScrubActorContext = {
-  direction: ScrubDirection;
+  direction: Direction;
   disable: boolean;
   max: number;
   min: number;
@@ -32,7 +32,7 @@ type ScrubActorContext = {
 };
 
 type ScrubActorInput = {
-  direction: ScrubDirection;
+  direction: Direction;
   disable?: boolean;
   initialValue?: number;
   max?: number;
@@ -53,24 +53,36 @@ type DisableEvent = {
 type EnableEvent = {
   type: 'ENABLE';
 };
-type ScrubErrorEvent = {
-  type: 'ERROR';
-  error: unknown;
+type ScrubDownEvent = {
+  type: 'SCRUB_DOWN';
 };
 type ScrubEndEvent = {
   type: 'SCRUB_END';
   percentage: number;
   value: number;
 };
+type ScrubErrorEvent = {
+  type: 'ERROR';
+  error: unknown;
+};
 type ScrubEvent = {
   type: 'SCRUB';
   percentage: number;
   value: number;
 };
+type ScrubLeftEvent = {
+  type: 'SCRUB_LEFT';
+};
+type ScrubRightEvent = {
+  type: 'SCRUB_RIGHT';
+};
 type ScrubStartEvent = {
   type: 'SCRUB_START';
   clientX: number;
   clientY: number;
+};
+type ScrubUpEvent = {
+  type: 'SCRUB_UP';
 };
 type SetPercentageEvent = {
   type: 'SET_PERCENTAGE';
@@ -88,9 +100,13 @@ type ScrubActorEvent =
   | DetachEvent
   | DisableEvent
   | EnableEvent
+  | ScrubDownEvent
   | ScrubErrorEvent
   | ScrubEvent
+  | ScrubLeftEvent
+  | ScrubRightEvent
   | ScrubStartEvent
+  | ScrubUpEvent
   | SetPercentageEvent
   | SetValueEvent;
 
@@ -111,22 +127,26 @@ type ParentActor = ActorRef<
 export type {
   AttachEvent,
   DetachEvent,
+  Direction,
   DisableEvent,
   EnableEvent,
-  ScrubErrorEvent,
   ScrubActorContext,
   ScrubActorEmittedEvent,
   ScrubActorEvent,
   ScrubActorInput,
-  ScrubDirection,
+  ScrubDownEvent,
   ScrubEmittedEvent,
   ScrubEndEmittedEvent,
   ScrubEndEvent,
+  ScrubErrorEvent,
   ScrubEvent,
+  ScrubLeftEvent,
+  ScrubRightEvent,
   ScrubStartEmittedEvent,
   ScrubStartEvent,
   ScrubTrackOffset,
   ScrubTrackRect,
+  ScrubUpEvent,
   SetPercentageEvent,
   SetValueEvent,
 };

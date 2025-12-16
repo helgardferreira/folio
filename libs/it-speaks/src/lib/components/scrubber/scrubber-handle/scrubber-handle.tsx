@@ -2,8 +2,6 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@folio/utils';
 
-import { useScrubberContext } from '../use-scrubber-context';
-
 import { useScrubberHandle } from './use-scrubber-handle';
 
 export type ScrubberHandleProps = ComponentProps<'div'>;
@@ -13,8 +11,7 @@ export function ScrubberHandle({
   style,
   ...props
 }: ScrubberHandleProps) {
-  const { scrubActor } = useScrubberContext();
-  const { direction, transformStyle } = useScrubberHandle(scrubActor);
+  const { direction, transformStyle } = useScrubberHandle();
 
   return (
     <div

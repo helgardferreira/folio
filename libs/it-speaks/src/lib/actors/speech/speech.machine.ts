@@ -123,7 +123,7 @@ const speechMachine = setup({
       id === ScrubKind.Word && context.voice !== undefined,
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGICiASgQPIEDaADALqKgoD2sAlgC5P0B2tIAHogJwBWAMwA6CgHYJggEwVZMxfwA0IAJ6IAHADYJ4zYM0UALIInbBARhnGAvrdWp02HABliAQQAilGkhAMzGyc3HwImhKqGggymsai2nLawsb8-JrC2vx2DiBOmLju3mSWfnSMrOxc-mERUYjGEvyiEtbGGWmCFMKW-Nr2jmgFOADKAMIEAKoAQr7cgZUhNVr8lqLGlhtyFNomTYL1CH0yopk7svyZgto3A3lDLuNTs6XzFcHVoLUSJ8JWuzJLD9+BRNDJDpZ5HpkiJjMJLpZLGYZHd8o88AAVAD6ADViABJMZ4Ob+BYfUICYzxEFZdqxLIZcHqRCI2SiVYUbqpGRmRqaVEPLCiACGGDYADcwKMJjMsSMMR4CBiSeUglUKQhhFr2YI+sIjDt0hIdocftp1sI5FZsu1NIiBc4haKJWBREwIAAbKUABVcHgAmiqAu91csENYQaIIpk7ZtLH92odZHpjBQQRIwZd5Jp+A6CiKxUxJaIUMKAK6wSA4X0BoNk0NfFkySPR7SxjYJzSHRp6QwJ-hNP6aHR57AFl0lj3CtRMDhQHAQTiu2fi+gAa1dZZYLDAACdhRwMGBXExYDuOHu6yGlo3w82KFGJDHER3BInmQhEic28JzPxYuYqSCKOTqFsWKBTjOc44Huu70Luk7CiwABm8EALaiFuO77oex6nuel7UG8ao3rwLKJGIugDpkiQZqCwhJrsohdNYULSBEMgSCB45Fq6EHTrO87TMQkwAHJeIqgZEaS16fGR4YWJoogyMkFDNlYkiCIY3YWMpKlWHy1hgtxzq8YhUHzt6HiTCMxLSaqixyWE8Z9FGWRSIiJjxpI3acS0hhqRGGyWGCOSDI6PHgZBgnSs8WJ4OJV4kU5LKGEpakiByOg2D5H4bII6ycukiR2rG2hhfcEWmVFAnQU8soJT4rwyclGpIm27KJCCdptlINiHFczHSKYUhgik8bAbkaKgRO-EWaMmK4gSRJJY5bU3A+ZgSMYuhAT+DEfpxD7CJy5i6BE0iSCZYGurAGC7mWABGj0xfVsz2cGrVhrsKbdDcpghWcliHMkYhmEDw6gukFXTZFt33U9L11TK0zxYlH31qRtQ8uIFDWNIGZNMaximqm4hCDYvQnbok3hfm1Xww9z2vSjaNNWUn1rWGYIFZy+NmBEA4mCDihRqkmbcpaPz2LkHD0BAcDcNNxFc7e8KHAAtDYuOcrreucnC10uir5JhrEBVCHqBoMsa2gQpkoibHEcjpNcRj9FNgpw26npgCbDbyYi-4JGkUhpIo2hIl2H6RwVf5dFIiRUr0RtmaWFaQP7WMskCSkhe01NpiNB3RDtzQ3GkKSSECfy6KnNUWVnKXhm+SnjaxeNwrl0QWHoUg7ZC4eQjDXsM6Id1M0jUBNxqFgnFpeO-qYcRaiXiBPmIcSZgBrfDtx7pejPYZImsSLdEIXSGFtkQfvqzQ5m+mk5joXEy0AA */
+  /** @xstate-layout N4IgpgJg5mDOIC5SwA5jAYwBYGICiASgQPIEDaADALqKgoD2sAlgC5P0B2tIAHogJwBmCgDoALMIAcAdlkA2AIwAmSWLEAaEAE9ECispELJcsZMFKKlgKxmAvrc2p02HABliAQQAilGkhAMzGyc3HwIetKaOghiSvwi0krKVhRyVkpyxnL2jmiYuO7eZAp+dIys7Fz+YRFRiHJKYiKSCoJ6FIJW0grK0jkgTvk4AMoAwgQAqgBCvtyBFSHViMaSCXLSpun8KhSR2roR4oqpHRQtVrH9gy5jkzMlc+XBVaBhqvHSFCkdCmImloI6uELEoEp05IINgoGlYrnkbuNpmQlKUAk9KqFllY5CIvnJLA1dvwxLIgcp+Kt9BQkmJ0hJafw4c5cMM8AAVAD6ADViABJUZ4Wb+ebPTEIbagjIdCHUsT8Br8MmCIQiFRywSCNI2bGwhwDeG4NnEADixtceA5AFkJmzBdRHkEMUtxakRMIKVYrBqrPwKHKyaZVp75fwvcTldCmfkRABDDBsABuYBGiKmHOGbI8BDZQrKjsWr0QnUEIlD8pU6Vk6SsQJkq2kkgoFP++Kskb11ywsfjTCTIiYEAANsmAAquDwATVzaPzL14uiUSisIhsXyU0n4G4UPskQPWoJS8sSi+hX0kUew3cTYBEKBjAFdYJAcGPJ9ORU7C8ClyvG5XN-w24Unui4iJkYh6MqgiSDI0jZB2BpXr2N4oIOMZaEwHBQDgECcDemEJvQADWN73iwLBgAATjGHAYGArhMLAFEcFR77ogW87fsuq7-luO5AnB0gJKoEjKvivxNheXZxtet5oRhWE4FRlH0JRckxiwABmqkALYiGRFHUbR9GMcxrH2sK7FzjUnqrNBaTKnBRhKAJXxgfocibnBnlmIIUlIX2qHoZh2FTMQEwAHJeFmU4WXmCzWboPqgiGvoyOsii0nuehuhkQj4mqpj+TJyHqQp2Ejh4Eysmxs5iq0bQrt53TKl8fwaPsCBdKCkg2BC25JKGEHFT2gXySFKZ3ByeBRbVCX1ekoLSOY5iqD0spAtiogpL8EKKANJIjbJQXlZN0zTbNDyWXVzrbh0YGeRs4GSIuezRG2ojrDYoarRuEJiEdpUnRNtznTNPgog6823R9uIWBs-C+l5sRAn8oi9R065+vimSA2NwWKaynI8vydqoh+HE2aGqqqG0dZiLsChApq3HSJ6Dm7F6fkIcyAUoeNilGqa5pWjaZNQ6KMMbm6Gq9Yk6QNOuQJY26liNuCkiIw2eM3rAGCUfeABGhsg6mF0+HFM7Q1+bMfGcjRmBIJhZZ1MHLgooYwYI9KqBcOsiHrBvG6bU3g8U5NWWKtsJPbpje5qag1p1gmlikpjKBk0H6PYeocPQEBwNwnYS5+nE+kCAC0jS4pYtd17X3O5LzJVJiXlNFm5ZYNL165s0uSo4r8vtdNu6xygDPPRi3+FDmAbeJeEvTiKkLUvXKKQucn+LNJ8eixBciSN-qzejShD5PhA8-1T0PWAbIscwb12VNPfaij+smtH52fNlSFV+3XHXEpgAS+QkDYWs1Id6LV2NjCEjJJ6XmngHfWRsTZYX-l+CEoIGaakGmcOUG5awNlLIGWCcRYjDQQV2Acw4MGcQUN0QwKRlQqE1r8eym1valnlPoJQEYTx9BzkAA */
   id: 'speech',
 
   context: ({ self, spawn }) => ({
@@ -223,6 +223,16 @@ const speechMachine = setup({
           type: 'isVolumeScrub',
         },
       },
+      {
+        actions: {
+          params: ({ event }) => ({ value: event.value }),
+          type: 'wordScrub',
+        },
+        guard: {
+          params: ({ event }) => ({ id: event.id }),
+          type: 'isWordScrub',
+        },
+      },
     ],
     SET_VOICE: {
       actions: {
@@ -316,6 +326,14 @@ const speechMachine = setup({
                 reenter: true,
                 target: 'playing',
               },
+              {
+                guard: {
+                  params: ({ event }) => ({ id: event.id }),
+                  type: 'isWordScrub',
+                },
+                reenter: true,
+                target: 'playing',
+              },
             ],
             SET_VOICE: {
               actions: {
@@ -335,16 +353,6 @@ const speechMachine = setup({
 
         scrubbing: {
           on: {
-            SCRUB: {
-              actions: {
-                params: ({ event }) => ({ value: event.value }),
-                type: 'wordScrub',
-              },
-              guard: {
-                params: ({ event }) => ({ id: event.id }),
-                type: 'isWordScrub',
-              },
-            },
             SCRUB_END: [
               {
                 guard: {

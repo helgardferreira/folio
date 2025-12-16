@@ -1,11 +1,11 @@
 import { clamp, lerp, normalize } from '@folio/utils';
 
-import type { ScrubDirection, ScrubEvent, ScrubTrackRect } from '../types';
+import type { Direction, ScrubEvent, ScrubTrackRect } from '../types';
 
 type ScrubEventFromOptions = {
   clientX: number;
   clientY: number;
-  direction: ScrubDirection;
+  direction: Direction;
   max: number;
   min: number;
   scrubTrackRect: ScrubTrackRect;

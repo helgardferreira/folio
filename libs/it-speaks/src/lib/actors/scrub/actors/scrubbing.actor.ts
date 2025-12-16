@@ -3,11 +3,11 @@ import { type ActorRefFrom, fromEventObservable } from 'xstate';
 
 import type { EventObservableCreator } from '@folio/actors';
 
-import type { ScrubDirection, ScrubEvent } from '../types';
+import type { Direction, ScrubEvent } from '../types';
 import { getScrubTrackRect, scrubEventFrom } from '../utils';
 
 type ScrubbingActorInput = {
-  direction: ScrubDirection;
+  direction: Direction;
   scrubTrack: Element | undefined;
   max: number;
   min: number;

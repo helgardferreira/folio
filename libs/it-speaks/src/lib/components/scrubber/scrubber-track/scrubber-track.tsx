@@ -2,8 +2,6 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@folio/utils';
 
-import { useScrubberContext } from '../use-scrubber-context';
-
 import { useScrubberTrack } from './use-scrubber-track';
 
 export type ScrubberTrackProps = ComponentProps<'div'>;
@@ -13,8 +11,7 @@ export function ScrubberTrack({
   ref,
   ...props
 }: ScrubberTrackProps) {
-  const { scrubActor } = useScrubberContext();
-  const { direction, setRef } = useScrubberTrack(scrubActor, ref);
+  const { direction, setRef } = useScrubberTrack(ref);
 
   return (
     <div

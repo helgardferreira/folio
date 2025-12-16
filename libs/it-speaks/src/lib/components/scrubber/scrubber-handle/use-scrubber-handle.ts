@@ -1,9 +1,11 @@
 import { useSelector } from '@xstate/react';
 import { type CSSProperties, useMemo } from 'react';
 
-import { type ScrubActorRef } from '../../../actors';
+import { useScrubberContext } from '../use-scrubber-context';
 
-export function useScrubberHandle(scrubActor: ScrubActorRef) {
+export function useScrubberHandle() {
+  const { scrubActor } = useScrubberContext();
+
   const direction = useSelector(
     scrubActor,
     (snapshot) => snapshot.context.direction

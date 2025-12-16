@@ -2,8 +2,6 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@folio/utils';
 
-import { useScrubberContext } from '../use-scrubber-context';
-
 import { useScrubberProgress } from './use-scrubber-progress';
 
 export type ScrubberProgressProps = ComponentProps<'div'>;
@@ -13,8 +11,7 @@ export function ScrubberProgress({
   style,
   ...props
 }: ScrubberProgressProps) {
-  const { scrubActor } = useScrubberContext();
-  const { direction, transformStyle } = useScrubberProgress(scrubActor);
+  const { direction, transformStyle } = useScrubberProgress();
 
   return (
     <div

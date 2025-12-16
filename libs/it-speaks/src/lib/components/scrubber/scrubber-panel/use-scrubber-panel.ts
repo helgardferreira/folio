@@ -1,5 +1,6 @@
 import { useSelector } from '@xstate/react';
 import {
+  type KeyboardEvent,
   type PointerEvent,
   type PointerEventHandler,
   useCallback,
@@ -7,12 +8,13 @@ import {
   useRef,
 } from 'react';
 
-import { type ScrubActorRef } from '../../../actors';
+import { useScrubberContext } from '../use-scrubber-context';
 
 export function useScrubberPanel(
-  scrubActor: ScrubActorRef,
-  onPointerDown?: PointerEventHandler<HTMLDivElement>
+  onPointerDown: PointerEventHandler<HTMLDivElement> | undefined
 ) {
+  const { scrubActor } = useScrubberContext();
+
   const onPointerDownRef =
     useRef<PointerEventHandler<HTMLDivElement>>(onPointerDown);
 
@@ -31,6 +33,34 @@ export function useScrubberPanel(
 
   const tabIndex = disabled ? -1 : 0;
 
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      switch (event.key) {
+        case 'ArrowDown': {
+          event.preventDefault();
+          scrubActor.send({ type: 'SCRUB_DOWN' });
+          break;
+        }
+        case 'ArrowUp': {
+          event.preventDefault();
+          scrubActor.send({ type: 'SCRUB_UP' });
+          break;
+        }
+        case 'ArrowLeft': {
+          event.preventDefault();
+          scrubActor.send({ type: 'SCRUB_LEFT' });
+          break;
+        }
+        case 'ArrowRight': {
+          event.preventDefault();
+          scrubActor.send({ type: 'SCRUB_RIGHT' });
+          break;
+        }
+      }
+    },
+    [scrubActor]
+  );
+
   const handleScrubStart = useCallback(
     (event: PointerEvent<HTMLDivElement>) => {
       onPointerDownRef.current?.(event);
@@ -45,6 +75,7 @@ export function useScrubberPanel(
 
   return {
     disabled,
+    handleKeyDown,
     handleScrubStart,
     max,
     min,
