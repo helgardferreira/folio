@@ -10,6 +10,7 @@ import { voicesListenerLogic } from './actors/voices-listener';
 import type {
   SelectEvent,
   SetVoicesEvent,
+  VoiceItem,
   VoiceSelectorActorContext,
   VoiceSelectorActorEvent,
   VoiceSelectorActorInput,
@@ -79,20 +80,45 @@ const voiceSelectorMachine = setup({
       ({ enqueue }, { voices }: Omit<SetVoicesEvent, 'type'>) => {
         if (voices.length === 0) return;
 
-        const voiceItems = getVoiceItems(voices);
-        const selectedIndex = findDefaultVoiceItemIndex(voiceItems);
-        const selectedVoiceItem = voiceItems[selectedIndex];
+        let voiceItems = getVoiceItems(voices);
+
+        const defaultVoiceItemIndex = findDefaultVoiceItemIndex(voiceItems);
+        const defaultVoiceItem: VoiceItem = {
+          ...voiceItems[defaultVoiceItemIndex],
+          isDefault: true,
+        };
+
+        voiceItems = voiceItems
+          .slice(0, defaultVoiceItemIndex)
+          .concat(defaultVoiceItem)
+          .concat(voiceItems.slice(defaultVoiceItemIndex + 1));
+
+        const preferredLanguageCode = navigator.language.split('-')[0];
+
+        voiceItems = voiceItems.toSorted((a, b) => {
+          if (a.isDefault) return -1;
+          if (b.isDefault) return 1;
+
+          if (a.languageCode === b.languageCode) {
+            return a.voiceName.localeCompare(b.voiceName);
+          }
+
+          if (a.languageCode === preferredLanguageCode) return -1;
+          if (b.languageCode === preferredLanguageCode) return 1;
+
+          return a.languageCode.localeCompare(b.languageCode);
+        });
 
         enqueue.assign({
-          activeVoiceIndex: selectedIndex,
-          activeVoiceItem: voiceItems[selectedIndex],
-          selectedVoiceItem: voiceItems[selectedIndex],
+          activeVoiceIndex: 0,
+          activeVoiceItem: defaultVoiceItem,
+          selectedVoiceItem: defaultVoiceItem,
           voiceItems,
         });
 
         enqueue.sendTo(({ context }) => context.parentActor, {
           type: 'SET_VOICE',
-          voice: selectedVoiceItem.voice,
+          voice: defaultVoiceItem.voice,
         });
       }
     ),
