@@ -22,7 +22,6 @@ type UseClickOutsideOptions<TEventName extends keyof EventMap> = {
   target?: Document | Element | Window;
 };
 
-// TODO: move to shared react utils library
 export function useClickOutside<
   TElement extends Element,
   TEventName extends keyof EventMap,

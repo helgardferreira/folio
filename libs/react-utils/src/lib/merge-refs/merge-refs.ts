@@ -12,7 +12,6 @@ import type { Ref, RefCallback } from 'react';
  * @param {(Ref<T> | undefined)[]} inputRefs Array of refs
  * @returns {Ref<T> | RefCallback<T>} Merged refs
  */
-// TODO: move to shared react utils library
 export function mergeRefs<T>(
   ...inputRefs: (Ref<T> | undefined)[]
 ): Ref<T> | RefCallback<T> {

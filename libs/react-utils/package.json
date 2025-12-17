@@ -1,5 +1,5 @@
 {
-  "name": "@folio/it-speaks",
+  "name": "@folio/react-utils",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -16,17 +16,11 @@
     }
   },
   "dependencies": {
-    "@folio/actors": "workspace:*",
-    "@folio/react-utils": "workspace:*",
-    "@folio/utils": "workspace:*",
-    "@xstate/react": "6.0.0",
-    "lucide-react": "0.561.0",
     "react": "19.2.1",
-    "rxjs": "7.8.2",
-    "xstate": "5.25.0"
+    "rxjs": "7.8.2"
   },
   "nx": {
-    "name": "it-speaks",
+    "name": "react-utils",
     "targets": {}
   }
 }

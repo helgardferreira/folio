@@ -25,7 +25,6 @@ type UseKeyEventOptions<TEventName extends keyof EventMap> = {
   target?: Document | Element | Window;
 };
 
-// TODO: move to shared react utils library
 export const useKeyEvent = <TEventName extends keyof EventMap>(
   cb: (
     event: keyof EventMap extends TEventName

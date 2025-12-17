@@ -13,10 +13,10 @@
       "path": "./libs/it-speaks"
     },
     {
-      "path": "./libs/utils"
+      "path": "./libs/react-utils"
     },
     {
-      "path": "./tools/tailwind-sync-plugin"
+      "path": "./libs/utils"
     }
   ]
 }

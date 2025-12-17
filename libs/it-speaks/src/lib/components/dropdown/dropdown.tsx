@@ -5,9 +5,8 @@ import {
   useState,
 } from 'react';
 
+import { mergeRefs, useClickOutside, useKeyEvent } from '@folio/react-utils';
 import { cn } from '@folio/utils';
-
-import { mergeRefs, useClickOutside, useKeyEvent } from '../../utils';
 
 type DropdownContextValue = {
   onToggle: (open: boolean) => void;

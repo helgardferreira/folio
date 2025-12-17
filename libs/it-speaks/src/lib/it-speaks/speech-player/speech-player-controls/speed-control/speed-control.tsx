@@ -3,6 +3,9 @@ import { CircleGaugeIcon } from 'lucide-react';
 
 import { useSpeechContext } from '../../../../actors';
 import {
+  Dropdown,
+  DropdownContent,
+  DropdownTrigger,
   ScrubberHandle,
   ScrubberProgress,
   ScrubberRoot,
@@ -13,8 +16,6 @@ import { SpeedMultiplierButton } from './speed-multiplier-button/speed-multiplie
 
 const SPEED_MULTIPLIERS: number[] = [2, 1.75, 1.5, 1.25, 1, 0.75, 0.5, 0.25];
 
-// TODO: implement close on click outside logic
-// TODO: create shared dropdown components
 export function SpeedControl() {
   const { speedScrubActor } = useSpeechContext();
 
@@ -23,13 +24,12 @@ export function SpeedControl() {
   );
 
   return (
-    <details className="dropdown dropdown-end dropdown-top">
-      <summary className="btn btn-square btn-primary btn-sm">
+    <Dropdown className="dropdown-end dropdown-top">
+      <DropdownTrigger className="btn btn-square btn-primary btn-sm">
         <CircleGaugeIcon className="size-4" />
-      </summary>
+      </DropdownTrigger>
 
-      {/* <div className="dropdown-content rounded-box -end-15.5 z-1 mb-12 grid h-80 w-39 grid-cols-2 grid-rows-[auto_1fr_auto] gap-y-3 bg-slate-100 px-6 py-4 shadow-sm select-none dark:bg-slate-950"> */}
-      <div className="text-base-content dropdown-content rounded-box -end-15.5 z-1 mb-12 grid h-80 w-39 grid-cols-2 grid-rows-[auto_1fr_auto] gap-y-3 bg-slate-100 px-6 py-4 shadow-sm select-none dark:bg-slate-950">
+      <DropdownContent className="text-base-content -end-15.5 mb-12 grid h-80 w-39 grid-cols-2 grid-rows-[auto_1fr_auto] gap-y-3 bg-slate-100 px-6 py-4 select-none dark:bg-slate-950">
         <span className="col-span-2 text-sm font-semibold">Playback Speed</span>
 
         <div className="size-full py-3">
@@ -55,7 +55,7 @@ export function SpeedControl() {
         <span className="col-start-2 text-center font-mono leading-none">
           {currentMultiplier}x
         </span>
-      </div>
-    </details>
+      </DropdownContent>
+    </Dropdown>
   );
 }
