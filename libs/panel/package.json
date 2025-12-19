@@ -1,0 +1,27 @@
+{
+  "name": "@folio/panel",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@folio/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "lil-gui": "0.21.0",
+    "react": "19.2.1",
+    "rxjs": "7.8.2"
+  },
+  "nx": {
+    "name": "panel",
+    "targets": {}
+  }
+}

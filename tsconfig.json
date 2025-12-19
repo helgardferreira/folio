@@ -13,6 +13,9 @@
       "path": "./libs/it-speaks"
     },
     {
+      "path": "./libs/panel"
+    },
+    {
       "path": "./libs/react-utils"
     },
     {
