@@ -9,6 +9,9 @@ import { usePanelGuiContext } from './use-panel-gui-context';
 //       - make state changes more granular
 //       - allow attaching event / change listeners
 //       - improve reactivity for performance
+// TODO: implement better type safety for `PanelControl` later
+// TODO: figure out folders later
+// TODO: continue here...
 export function usePanel<T extends PanelControls>(
   controls: T
 ): ControlsState<T> {
@@ -23,6 +26,7 @@ export function usePanel<T extends PanelControls>(
   );
 
   useEffect(() => {
+    // TODO: remove this after debugging
     console.log('mounting usePanel');
 
     const controls = controlsRef.current;

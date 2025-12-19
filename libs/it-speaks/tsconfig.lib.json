@@ -38,6 +38,9 @@
       "path": "../actors/tsconfig.lib.json"
     },
     {
+      "path": "../panel/tsconfig.lib.json"
+    },
+    {
       "path": "../react-utils/tsconfig.lib.json"
     },
     {

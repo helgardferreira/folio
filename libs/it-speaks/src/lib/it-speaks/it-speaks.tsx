@@ -1,18 +1,23 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 import { SpeechProvider } from '../actors';
 
-import { SpeechPlayer } from './speech-player/speech-player';
 import { SpeechVisualization } from './speech-visualization/speech-visualization';
 
-// TODO: reimplement it-speaks speech synthesis showcase
-//       - create 3D WebGL renderer for showcase
+const queryClient = new QueryClient();
+
 export function ItSpeaks() {
   return (
-    <SpeechProvider>
-      <div className="rounded-box relative flex size-full flex-col items-center py-8">
-        <SpeechVisualization />
+    <QueryClientProvider client={queryClient}>
+      <SpeechProvider>
+        {/* <div className="rounded-box relative flex size-full flex-col items-center py-8"> */}
+        <div className="relative size-full overflow-hidden">
+          <SpeechVisualization />
 
-        <SpeechPlayer />
-      </div>
-    </SpeechProvider>
+          {/* // TODO: restore this after implementing WebGL Visualization */}
+          {/* <SpeechPlayer /> */}
+        </div>
+      </SpeechProvider>
+    </QueryClientProvider>
   );
 }

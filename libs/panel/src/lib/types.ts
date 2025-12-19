@@ -1,6 +1,5 @@
 import type { PanelControlType } from './constants';
 
-// TODO: implement better type safety for `PanelControl` later
 export type PanelControl<T> = {
   type: PanelControlType;
   value: T;

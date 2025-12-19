@@ -16,7 +16,7 @@ export function getVoiceItems(voices: SpeechSynthesisVoice[]) {
       LANGUAGE_VOICE_LOCALE_META[languageCode];
 
     const flagUrl = new URL(
-      `../../../components/icons/flags/${region}.svg`,
+      `../../../../assets/icons/flags/${region}.svg`,
       import.meta.url
     ).href;
 

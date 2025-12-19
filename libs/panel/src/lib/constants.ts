@@ -1,4 +1,3 @@
-// TODO: figure out folders later
 export enum PanelControlType {
   Button = 'button',
   Checkbox = 'checkbox',
